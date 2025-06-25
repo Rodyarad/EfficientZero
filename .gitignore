@@ -10,3 +10,7 @@ __pycache__/
 # results dir
 /results
 /files
+
+/core/ctree/cytree.cpp
+/core/ctree/cytree.cpython-39-x86_64-linux-gnu.so
+/core/ctree/build

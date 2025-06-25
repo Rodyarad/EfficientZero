@@ -6,6 +6,7 @@ import numpy as np
 import ray
 import torch
 from torch.utils.tensorboard import SummaryWriter
+import wandb
 
 from core.test import test
 from core.train import train
@@ -83,10 +84,18 @@ if __name__ == '__main__':
     init_logger(log_base_path)
     logging.getLogger('train').info('Path: {}'.format(exp_path))
     logging.getLogger('train').info('Param: {}'.format(game_config.get_hparams()))
+    wandb_name = f"{args.env}_{args.case}_{args.info}_{args.seed}"
 
     device = game_config.device
     try:
         if args.opr == 'train':
+            wandb.init(
+                name=wandb_name,
+                project=game_config.wandb_project,
+                sync_tensorboard=True,
+                config=vars(args),
+                dir=exp_path
+            )
             summary_writer = SummaryWriter(exp_path, flush_secs=10)
             if args.load_model and os.path.exists(args.model_path):
                 model_path = args.model_path

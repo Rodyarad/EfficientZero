@@ -1,4 +1,4 @@
-numpy==1.20.0
+numpy==1.26.4
 ray==1.13.0
 gym[atari,roms,accept-rom-license]==0.22.0
 cython==0.29.23
@@ -6,4 +6,6 @@ tensorboard
 opencv-python==4.5.1.48
 kornia==0.6.6
 wandb==0.14.2
+matplotlib==3.3.4
+scikit-image==0.18.3
 tdqm

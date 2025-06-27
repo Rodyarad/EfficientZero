@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--env', required=True, help='Name of the environment')
     parser.add_argument('--result_dir', default=os.path.join(os.getcwd(), 'results'),
                         help="Directory Path to store results (default: %(default)s)")
-    parser.add_argument('--case', required=True, choices=['atari'],
+    parser.add_argument('--case', required=True, choices=['atari', 'atari_test', 'shapes2d'],
                         help="It's used for switching between different domains(default: %(default)s)")
     parser.add_argument('--opr', required=True, choices=['train', 'test'])
     parser.add_argument('--amp_type', required=True, choices=['torch_amp', 'none'],
@@ -73,6 +73,9 @@ if __name__ == '__main__':
     # import corresponding configuration , neural networks and envs
     if args.case == 'atari':
         from config.atari import game_config
+    elif args.case == 'atari_test':
+        from config.atari import game_test_config
+        game_config = game_test_config
     elif args.case == 'shapes2d':
         from config.shapes2d import game_config
     else:
@@ -87,6 +90,7 @@ if __name__ == '__main__':
     logging.getLogger('train').info('Path: {}'.format(exp_path))
     logging.getLogger('train').info('Param: {}'.format(game_config.get_hparams()))
     wandb_name = f"{args.env}_{args.case}_{args.info}_{args.seed}"
+    print(f'EXP_PATH: {exp_path}')
 
     device = game_config.device
     try:

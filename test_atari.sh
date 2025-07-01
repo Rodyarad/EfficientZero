@@ -4,7 +4,7 @@ export CUDA_VISIBLE_DEVICES=0
 export WANDB_ENTITY="r-rodionvahitoff"
 
 python main.py --env BreakoutNoFrameskip-v4 --case atari_test --opr train --force \
-  --num_gpus 1 --num_cpus 10 --cpu_actor 5 --gpu_actor 5 \
+  --num_gpus 1 --num_cpus 4 --cpu_actor 1 --gpu_actor 1 \
   --seed 0 \
   --p_mcts_num 4 \
   --use_priority \

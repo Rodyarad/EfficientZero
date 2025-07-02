@@ -288,11 +288,11 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
     loss_data = (total_loss.item(), weighted_loss.item(), loss.mean().item(), 0, policy_loss.mean().item(),
                  value_prefix_loss.mean().item(), value_loss.mean().item(), consistency_loss.mean())
     if vis_result:
-        reward_w_dist, representation_mean, dynamic_mean, reward_mean = model.get_params_mean()
-        other_dist['reward_weights_dist'] = reward_w_dist
-        other_log['representation_weight'] = representation_mean
-        other_log['dynamic_weight'] = dynamic_mean
-        other_log['reward_weight'] = reward_mean
+        # reward_w_dist, representation_mean, dynamic_mean, reward_mean = model.get_params_mean()
+        # other_dist['reward_weights_dist'] = reward_w_dist
+        # other_log['representation_weight'] = representation_mean
+        # other_log['dynamic_weight'] = dynamic_mean
+        # other_log['reward_weight'] = reward_mean
 
         # reward l1 loss
         value_prefix_indices_0 = (target_value_prefix_cpu[:, :config.num_unroll_steps].reshape(-1).unsqueeze(-1) == 0)

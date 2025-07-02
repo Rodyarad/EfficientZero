@@ -91,6 +91,7 @@ class Shapes2dConfig(BaseConfig):
         self.checkpoint_path = 'ez/ocr/slate_weights/navigation5х5.pth'
         self.num_slots = 6
         self.slot_dim = 64
+        self.latent_dim = 512
 
 
 
@@ -260,6 +261,7 @@ class Shapes2dTestConfig(BaseConfig):
         self.checkpoint_path = 'ez/ocr/slate_weights/navigation5х5.pth'
         self.num_slots = 6
         self.slot_dim = 64
+        self.latent_dim = 512
 
 
 

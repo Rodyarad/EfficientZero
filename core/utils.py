@@ -346,3 +346,9 @@ def str_to_arr(s, gray_scale=False):
         arr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     return arr
+
+def obs_to_tensor(obs, device):
+    if len(obs.shape) == 4:
+        return torch.Tensor(obs.transpose(0, 3, 1, 2)).to(device) / 255.0
+    else:
+        return torch.Tensor(obs).to(device)

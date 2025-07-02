@@ -3,10 +3,13 @@ import torch
 from core.config import BaseConfig
 from core.utils import WarpFrame, EpisodicLifeEnv, TimeLimit
 from core.dataset import Transforms
-from .env_wrapper import Shapes2dWrapper
+from .env_wrapper import Shapes2dWrapper, SlotExtractor, SlotExtractorWrapper
 from .model import EfficientZeroNet
 from .shapes2d import Shapes2d
 from . import register
+from omegaconf import OmegaConf
+from collections import namedtuple
+from ocr.slate.slate import SLATE
 import gym
 
 
@@ -84,6 +87,12 @@ class Shapes2dConfig(BaseConfig):
         self.wandb_project = "ez-v1"
         self.debug = False
 
+        self.ocr_config_path = 'ez/ocr/slate/config/navigation5x5.yaml'
+        self.checkpoint_path = 'ez/ocr/slate_weights/navigation5х5.pth'
+        self.num_slots = 6
+        self.slot_dim = 64
+
+
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):
         if self.change_temperature:
@@ -145,7 +154,19 @@ class Shapes2dConfig(BaseConfig):
         if save_video:
             from gym.wrappers import Monitor
             env = Monitor(env, directory=save_path, force=True, video_callable=video_callable, uid=uid)
-        return Shapes2dWrapper(env, discount=self.discount, cvt_string=self.cvt_string)
+
+        config_ocr = OmegaConf.load(self.ocr_config_path)
+        config_env = namedtuple('EnvConfig', ['obs_size', 'obs_channels'])(64, 3)
+        slate = SLATE(config_ocr, config_env, observation_space=None, preserve_slot_order=True)
+        state_dict = torch.load(self.checkpoint_path)["ocr_module_state_dict"]
+        slate._module.load_state_dict(state_dict)
+        slate.requires_grad_(False)
+        slate.eval()
+
+        slot_extractor = SlotExtractor(model=slate, device='cuda', name_model='SLATE')
+
+        env = SlotExtractorWrapper(env, slot_extractor, self.num_slots, self.slot_dim)
+        return env
 
     def scalar_reward_loss(self, prediction, target):
         return -(torch.log_softmax(prediction, dim=1) * target).sum(1)
@@ -235,6 +256,12 @@ class Shapes2dTestConfig(BaseConfig):
         self.wandb_project = "ez-v1"
         self.debug = True
 
+        self.ocr_config_path = 'ez/ocr/slate/config/navigation5x5.yaml'
+        self.checkpoint_path = 'ez/ocr/slate_weights/navigation5х5.pth'
+        self.num_slots = 6
+        self.slot_dim = 64
+
+
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):
         if self.change_temperature:
@@ -296,7 +323,19 @@ class Shapes2dTestConfig(BaseConfig):
         if save_video:
             from gym.wrappers import Monitor
             env = Monitor(env, directory=save_path, force=True, video_callable=video_callable, uid=uid)
-        return Shapes2dWrapper(env, discount=self.discount, cvt_string=self.cvt_string)
+
+        config_ocr = OmegaConf.load(self.ocr_config_path)
+        config_env = namedtuple('EnvConfig', ['obs_size', 'obs_channels'])(64, 3)
+        slate = SLATE(config_ocr, config_env, observation_space=None, preserve_slot_order=True)
+        state_dict = torch.load(self.checkpoint_path)["ocr_module_state_dict"]
+        slate._module.load_state_dict(state_dict)
+        slate.requires_grad_(False)
+        slate.eval()
+
+        slot_extractor = SlotExtractor(model=slate, device='cuda', name_model='SLATE')
+
+        env = SlotExtractorWrapper(env, slot_extractor, self.num_slots, self.slot_dim)
+        return env
 
     def scalar_reward_loss(self, prediction, target):
         return -(torch.log_softmax(prediction, dim=1) * target).sum(1)

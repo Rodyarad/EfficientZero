@@ -61,8 +61,8 @@ class Shapes2dConfig(BaseConfig):
             policy_loss_coeff=1,
             consistency_coeff=2,
             # reward sum
-            lstm_hidden_size=512,
-            lstm_horizon_len=5,
+            rnn_hidden_size=512,
+            rnn_horizon_len=5,
             # siamese
             proj_hid=1024,
             proj_out=1024,
@@ -134,7 +134,7 @@ class Shapes2dConfig(BaseConfig):
             self.downsample,
             self.inverse_value_transform,
             self.inverse_reward_transform,
-            self.lstm_hidden_size,
+            self.rnn_hidden_size,
             bn_mt=self.bn_mt,
             proj_hid=self.proj_hid,
             proj_out=self.proj_out,
@@ -231,8 +231,8 @@ class Shapes2dTestConfig(BaseConfig):
             policy_loss_coeff=1,
             consistency_coeff=2,
             # reward sum
-            lstm_hidden_size=512,
-            lstm_horizon_len=5,
+            rnn_hidden_size=512,
+            rnn_horizon_len=5,
             # siamese
             proj_hid=1024,
             proj_out=1024,
@@ -304,7 +304,7 @@ class Shapes2dTestConfig(BaseConfig):
             self.downsample,
             self.inverse_value_transform,
             self.inverse_reward_transform,
-            self.lstm_hidden_size,
+            self.rnn_hidden_size,
             bn_mt=self.bn_mt,
             proj_hid=self.proj_hid,
             proj_out=self.proj_out,

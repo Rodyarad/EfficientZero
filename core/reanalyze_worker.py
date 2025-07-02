@@ -360,7 +360,7 @@ class BatchWorker_GPU(object):
                         value_lst[value_index] += reward * self.config.discount ** i
 
                     # reset every lstm_horizon_len
-                    if horizon_id % self.config.lstm_horizon_len == 0:
+                    if horizon_id % self.config.rnn_horizon_len == 0:
                         value_prefix = 0.0
                         base_index = current_index
                     horizon_id += 1

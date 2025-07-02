@@ -36,22 +36,20 @@ def concat_output(output_lst):
         reward_lst.append(output.value_prefix)
         policy_logits_lst.append(output.policy_logits)
         hidden_state_lst.append(output.hidden_state)
-        reward_hidden_c_lst.append(output.reward_hidden[0].squeeze(0))
-        reward_hidden_h_lst.append(output.reward_hidden[1].squeeze(0))
+        reward_hidden_h_lst.append(output.reward_hidden[0].squeeze(0))
 
     value_lst = np.concatenate(value_lst)
     reward_lst = np.concatenate(reward_lst)
     policy_logits_lst = np.concatenate(policy_logits_lst)
     # hidden_state_lst = torch.cat(hidden_state_lst, 0)
     hidden_state_lst = np.concatenate(hidden_state_lst)
-    reward_hidden_c_lst = np.expand_dims(np.concatenate(reward_hidden_c_lst), axis=0)
     reward_hidden_h_lst = np.expand_dims(np.concatenate(reward_hidden_h_lst), axis=0)
 
-    return value_lst, reward_lst, policy_logits_lst, hidden_state_lst, (reward_hidden_c_lst, reward_hidden_h_lst)
+    return value_lst, reward_lst, policy_logits_lst, hidden_state_lst, reward_hidden_h_lst
 
 
 class BaseNet(nn.Module):
-    def __init__(self, inverse_value_transform, inverse_reward_transform, lstm_hidden_size):
+    def __init__(self, inverse_value_transform, inverse_reward_transform, rnn_hidden_size):
         """Base Network
         schedule_timesteps. After this many timesteps pass final_p is
         returned.
@@ -67,7 +65,7 @@ class BaseNet(nn.Module):
         super(BaseNet, self).__init__()
         self.inverse_value_transform = inverse_value_transform
         self.inverse_reward_transform = inverse_reward_transform
-        self.lstm_hidden_size = lstm_hidden_size
+        self.rnn_hidden_size = rnn_hidden_size
 
     def prediction(self, state):
         raise NotImplementedError
@@ -90,11 +88,10 @@ class BaseNet(nn.Module):
             state = state.detach().cpu().numpy()
             actor_logit = actor_logit.detach().cpu().numpy()
             # zero initialization for reward (value prefix) hidden states
-            reward_hidden = (torch.zeros(1, num, self.lstm_hidden_size).detach().cpu().numpy(),
-                             torch.zeros(1, num, self.lstm_hidden_size).detach().cpu().numpy())
+            reward_hidden = torch.zeros(1, num, self.n_slots, self.rnn_hidden_size).detach().cpu().numpy()
         else:
             # zero initialization for reward (value prefix) hidden states
-            reward_hidden = (torch.zeros(1, num, self.lstm_hidden_size).to('cuda'), torch.zeros(1, num, self.lstm_hidden_size).to('cuda'))
+            reward_hidden = torch.zeros(1, num, self.n_slots, self.rnn_hidden_size).to('cuda')
 
         return NetworkOutput(value, [0. for _ in range(num)], actor_logit, state, reward_hidden)
 
@@ -107,7 +104,7 @@ class BaseNet(nn.Module):
             value = self.inverse_value_transform(value).detach().cpu().numpy()
             value_prefix = self.inverse_reward_transform(value_prefix).detach().cpu().numpy()
             state = state.detach().cpu().numpy()
-            reward_hidden = (reward_hidden[0].detach().cpu().numpy(), reward_hidden[1].detach().cpu().numpy())
+            reward_hidden = reward_hidden[0].detach().cpu().numpy()
             actor_logit = actor_logit.detach().cpu().numpy()
 
         return NetworkOutput(value, value_prefix, actor_logit, state, reward_hidden)

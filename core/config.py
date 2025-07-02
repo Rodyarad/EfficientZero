@@ -61,8 +61,8 @@ class BaseConfig(object):
                  image_based: bool = False,
                  frame_skip: int = 1,
                  stacked_observations: int = 16,
-                 lstm_hidden_size: int = 64,
-                 lstm_horizon_len: int = 1,
+                 rnn_hidden_size: int = 64,
+                 rnn_horizon_len: int = 1,
                  reward_loss_coeff: float = 1,
                  value_loss_coeff: float = 1,
                  policy_loss_coeff: float = 1,
@@ -245,8 +245,8 @@ class BaseConfig(object):
         self.td_steps = td_steps
         self.frame_skip = frame_skip
         self.stacked_observations = stacked_observations
-        self.lstm_hidden_size = lstm_hidden_size
-        self.lstm_horizon_len = lstm_horizon_len
+        self.rnn_hidden_size = rnn_hidden_size
+        self.rnn_horizon_len = rnn_horizon_len
         self.reward_loss_coeff = reward_loss_coeff
         self.value_loss_coeff = value_loss_coeff
         self.policy_loss_coeff = policy_loss_coeff
@@ -392,7 +392,7 @@ class BaseConfig(object):
             self.use_augmentation = False
 
         if not self.use_value_prefix:
-            self.lstm_horizon_len = 1
+            self.rnn_horizon_len = 1
 
         if not self.off_correction:
             self.auto_td_steps = self.training_steps
@@ -400,7 +400,7 @@ class BaseConfig(object):
             self.auto_td_steps = self.auto_td_steps_ratio * self.training_steps
 
         assert 0 <= self.lr_warm_up <= 0.1
-        assert 1 <= self.lstm_horizon_len <= self.num_unroll_steps
+        assert 1 <= self.rnn_horizon_len <= self.num_unroll_steps
         assert self.start_transitions >= self.batch_size
 
         # augmentation

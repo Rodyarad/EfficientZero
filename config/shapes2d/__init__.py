@@ -46,7 +46,7 @@ class Shapes2dConfig(BaseConfig):
             lr_decay_steps=100000,
             auto_td_steps_ratio=0.3,
             # replay window
-            start_transitions=8,
+            start_transitions=2,
             total_transitions=100 * 1000,
             transition_num=1,
             # frame skip & stack observation

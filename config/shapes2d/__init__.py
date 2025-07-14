@@ -15,13 +15,13 @@ class Shapes2dConfig(BaseConfig):
         super(Shapes2dConfig, self).__init__(
             training_steps=100000,
             last_steps=20000,
-            test_interval=10000,
-            log_interval=1000,
-            vis_interval=1000,
+            test_interval=5000,
+            log_interval=1,
+            vis_interval=100,
             test_episodes=30,
             checkpoint_interval=100,
             target_model_interval=200,
-            save_ckpt_interval=10000,
+            save_ckpt_interval=5000,
             max_moves=100,
             test_max_moves=100,
             history_length=400,
@@ -201,7 +201,7 @@ class Shapes2dTestConfig(BaseConfig):
             total_transitions=10 * 1000,
             transition_num=1,
             # frame skip & stack observation
-            frame_skip=1,
+            frame_skip=0,
             stacked_observations=1,
             # coefficient
             reward_loss_coeff=1,
@@ -233,7 +233,7 @@ class Shapes2dTestConfig(BaseConfig):
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
         self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
         self.wandb_project = "ez-v1"
-        self.debug = True
+        self.debug = False
 
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):

@@ -350,6 +350,13 @@ def _train(model, target_model, replay_buffer, shared_storage, batch_storage, co
 
     scaler = GradScaler()
 
+    if os.path.exists(config.resume_path):
+        optimizer_path = os.path.join(config.resume_path, 'optimizer.p')
+        optimizer.load_state_dict(torch.load(optimizer_path))
+
+        scaler_path = os.path.join(config.resume_path, 'scaler.p')
+        scaler.load_state_dict(torch.load(scaler_path))
+
     model.train()
     target_model.eval()
     # ----------------------------------------------------------------------------------
@@ -365,7 +372,7 @@ def _train(model, target_model, replay_buffer, shared_storage, batch_storage, co
     # set signals for other workers
     shared_storage.set_start_signal.remote()
 
-    step_count = 0
+    step_count = ray.get(shared_storage.get_counter.remote()) if os.path.exists(config.resume_path) else 0
     # Note: the interval of the current model and the target model is between x and 2x. (x = target_model_interval)
     # recent_weights is the param of the target model
     recent_weights = model.get_weights()
@@ -415,8 +422,24 @@ def _train(model, target_model, replay_buffer, shared_storage, batch_storage, co
 
         # save models
         if step_count % config.save_ckpt_interval == 0:
-            model_path = os.path.join(config.model_dir, 'model_{}.p'.format(step_count))
+            model_path = os.path.join(config.model_dir, 'model.p')
             torch.save(model.state_dict(), model_path)
+
+            optim_path = os.path.join(config.model_dir, 'optimizer.p')
+            torch.save(optimizer.state_dict(), optim_path)
+
+            scaler_path = os.path.join(config.model_dir, 'scaler.p')
+            torch.save(scaler.state_dict(), scaler_path)
+
+            buffer_path = config.model_dir
+            buffer_path.mkdir(parents=True, exist_ok=True)
+            is_buffer_saved = ray.get(replay_buffer.save_buffer.remote(str(buffer_path.resolve())))
+
+            storage_path = config.model_dir
+            storage_path.mkdir(parents=True, exist_ok=True)
+            is_storage_saved = ray.get(shared_storage.save_storage.remote(str(storage_path.resolve())))
+
+            assert is_buffer_saved and is_storage_saved
 
     shared_storage.set_weights.remote(model.get_weights())
     time.sleep(30)
@@ -435,10 +458,10 @@ def train(config, summary_writer, model_path=None):
     """
     model = config.get_uniform_network()
     target_model = config.get_uniform_network()
-    if model_path:
-        print('resume model from path: ', model_path)
-        weights = torch.load(model_path)
-
+    if os.path.exists(config.resume_path):
+        print('resume model from path: ', config.resume_path)
+        model_path = os.path.join(config.resume_path, 'model.p')
+        weights = torch.load(config.resume_path)
         model.load_state_dict(weights)
         target_model.load_state_dict(weights)
 
@@ -448,6 +471,13 @@ def train(config, summary_writer, model_path=None):
     batch_storage = QueueStorage(15, 20)
     mcts_storage = QueueStorage(18, 25)
     replay_buffer = ReplayBuffer.remote(config=config)
+
+    if os.path.exists(config.resume_path):
+        replay_buffer.load_buffer.remote(model_path)
+        storage.load_storage.remote(model_path)
+        storage.set_weights.remote(model.get_weights())
+        storage.set_target_weights.remote(model.get_weights())
+
 
     # other workers
     workers = []

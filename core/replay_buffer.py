@@ -174,13 +174,13 @@ class ReplayBuffer(object):
         return len(self.priorities)
 
     def save_buffer(self, path):
-        f_buffer = open(os.path.join(path, 'buffer/buffer.b'), 'wb')
+        f_buffer = open(os.path.join(path, 'buffer.b'), 'wb')
         pickle.dump(self.buffer, f_buffer)
         f_buffer.close()
-        f_priorities = open(os.path.join(path, 'buffer/priorities.b'), 'wb')
+        f_priorities = open(os.path.join(path, 'priorities.b'), 'wb')
         pickle.dump(self.priorities, f_priorities)
         f_priorities.close()
-        f_lookup = open(os.path.join(path, 'buffer/lookup.b'), 'wb')
+        f_lookup = open(os.path.join(path, 'lookup.b'), 'wb')
         pickle.dump(self.game_look_up, f_lookup)
         f_lookup.close()
 

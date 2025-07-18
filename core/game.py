@@ -139,7 +139,8 @@ class GameHistory:
         padding: bool
             True -> padding frames if (t + stack frames) are out of trajectory
         """
-        frames = ray.get(self.obs_history)[i:i + self.stacked_observations + extra_len]
+        #frames = ray.get(self.obs_history)[i:i + self.stacked_observations + extra_len]
+        frames = self.obs_history[i:i + self.stacked_observations + extra_len]
         if padding:
             pad_len = self.stacked_observations + extra_len - len(frames)
             if pad_len > 0:
@@ -169,7 +170,8 @@ class GameHistory:
         # post processing the data when a history block is full
         # obs_history should be sent into the ray memory. Otherwise, it will cost large amounts of time in copying obs.
         self.rewards = np.array(self.rewards)
-        self.obs_history = ray.put(np.array(self.obs_history))
+        #self.obs_history = ray.put(np.array(self.obs_history))
+        self.obs_history = np.array(self.obs_history)
         self.actions = np.array(self.actions)
         self.child_visits = np.array(self.child_visits)
         self.root_values = np.array(self.root_values)

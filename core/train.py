@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import ray
 import time
 import torch
@@ -422,20 +423,20 @@ def _train(model, target_model, replay_buffer, shared_storage, batch_storage, co
 
         # save models
         if step_count % config.save_ckpt_interval == 0:
-            model_path = os.path.join(config.model_dir, 'model.p')
+            model_path = Path(config.model_dir) / 'model.p'
             torch.save(model.state_dict(), model_path)
 
-            optim_path = os.path.join(config.model_dir, 'optimizer.p')
+            optim_path = Path(config.model_dir) /  'optimizer.p'
             torch.save(optimizer.state_dict(), optim_path)
 
-            scaler_path = os.path.join(config.model_dir, 'scaler.p')
+            scaler_path = Path(config.model_dir) /  'scaler.p'
             torch.save(scaler.state_dict(), scaler_path)
 
-            buffer_path = config.model_dir
+            buffer_path = Path(config.model_dir) / 'buffer'
             buffer_path.mkdir(parents=True, exist_ok=True)
             is_buffer_saved = ray.get(replay_buffer.save_buffer.remote(str(buffer_path.resolve())))
 
-            storage_path = config.model_dir
+            storage_path = Path(config.model_dir)
             storage_path.mkdir(parents=True, exist_ok=True)
             is_storage_saved = ray.get(shared_storage.save_storage.remote(str(storage_path.resolve())))
 

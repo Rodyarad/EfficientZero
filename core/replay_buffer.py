@@ -222,7 +222,7 @@ class ReplayBuffer(object):
         self.keep_ratio = attributes['keep_ratio']
         self.model_index = attributes['model_index']
         self.model_update_interval = attributes['model_update_interval']
-        self._eps_collected = attributes['eps_collected ']
+        self._eps_collected = attributes['eps_collected']
         self.base_idx = attributes['base_idx']
         self._alpha = attributes['alpha']
         self.transition_top = attributes['transition_top']

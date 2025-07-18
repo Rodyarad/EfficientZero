@@ -460,8 +460,8 @@ def train(config, summary_writer, model_path=None):
     target_model = config.get_uniform_network()
     if os.path.exists(config.resume_path):
         print('resume model from path: ', config.resume_path)
-        model_path = os.path.join(config.resume_path, 'model.p')
-        weights = torch.load(config.resume_path)
+        weights_path = os.path.join(config.resume_path, 'model.p')
+        weights = torch.load(weights_path)
         model.load_state_dict(weights)
         target_model.load_state_dict(weights)
 
@@ -473,8 +473,8 @@ def train(config, summary_writer, model_path=None):
     replay_buffer = ReplayBuffer.remote(config=config)
 
     if os.path.exists(config.resume_path):
-        replay_buffer.load_buffer.remote(model_path)
-        storage.load_storage.remote(model_path)
+        replay_buffer.load_buffer.remote(config.resume_path)
+        storage.load_storage.remote(config.resume_path)
         storage.set_weights.remote(model.get_weights())
         storage.set_target_weights.remote(model.get_weights())
 

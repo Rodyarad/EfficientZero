@@ -248,7 +248,7 @@ class AtariTestConfig(BaseConfig):
         self.wandb_project = "ez-v1"
         self.wandb_id = ""
         self.resume_path = ""
-        self.debug = False
+        self.debug = True
 
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):

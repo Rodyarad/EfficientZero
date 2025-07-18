@@ -1,5 +1,6 @@
 import ray
-
+import os
+import pickle
 from ray.util.queue import Queue
 
 
@@ -146,3 +147,44 @@ class SharedStorage(object):
             test_counter = None
 
         return ori_reward, reward, reward_max, eps_lengths, eps_lengths_max, test_counter, test_dict, temperature, visit_entropy, priority_self_play, distributions
+
+    def save_storage(self, path):
+        attributes = {'step_counter': self.step_counter,
+                      'test_counter': self.test_counter,
+                      'ori_reward_log': self.ori_reward_log,
+                      'reward_log': self.reward_log,
+                      'reward_max_log': self.reward_max_log,
+                      'test_dict_log': self.test_dict_log,
+                      'eps_lengths': self.eps_lengths,
+                      'eps_lengths_max': self.eps_lengths_max,
+                      'temperature_log': self.temperature_log,
+                      'visit_entropies_log': self.visit_entropies_log,
+                      'priority_self_play_log': self.priority_self_play_log,
+                      'distributions_log': self.distributions_log
+        }
+        f_attributes = open(os.path.join(path, 'storage_attributes.b'), 'wb')
+        pickle.dump(attributes, f_attributes)
+        f_attributes.close()
+
+        return True
+
+
+    def load_storage(self, path):
+        f_attributes = open(os.path.join(path, 'storage_attributes.b'), 'rb')
+        attributes = pickle.load(f_attributes)
+        f_attributes.close()
+
+        self.step_counter = attributes['step_counter']
+        self.test_counter = attributes['test_counter']
+        self.ori_reward_log = attributes['ori_reward_log']
+        self.reward_log = attributes['reward_log']
+        self.reward_max_log = attributes['reward_max_log']
+        self.test_dict_log = attributes['test_dict_log']
+        self.eps_lengths = attributes['eps_lengths']
+        self.eps_lengths_max = attributes['eps_lengths_max']
+        self.temperature_log = attributes['temperature_log']
+        self.visit_entropies_log = attributes['visit_entropies_log']
+        self.priority_self_play_log = attributes['priority_self_play_log']
+        self.distributions_log = attributes['distributions_log']
+
+        return True

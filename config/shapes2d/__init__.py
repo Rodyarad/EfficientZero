@@ -18,13 +18,13 @@ class Shapes2dConfig(BaseConfig):
         super(Shapes2dConfig, self).__init__(
             training_steps=100000,
             last_steps=20000,
-            test_interval=10000,
-            log_interval=1000,
-            vis_interval=1000,
+            test_interval=5000,
+            log_interval=1,
+            vis_interval=100,
             test_episodes=30,
             checkpoint_interval=100,
             target_model_interval=200,
-            save_ckpt_interval=10000,
+            save_ckpt_interval=5000,
             max_moves=100,
             test_max_moves=100,
             history_length=400,
@@ -49,7 +49,7 @@ class Shapes2dConfig(BaseConfig):
             lr_decay_steps=100000,
             auto_td_steps_ratio=0.3,
             # replay window
-            start_transitions=8,
+            start_transitions=2,
             total_transitions=100 * 1000,
             transition_num=1,
             # frame skip & stack observation
@@ -85,6 +85,8 @@ class Shapes2dConfig(BaseConfig):
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
         self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
         self.wandb_project = "ez-v1"
+        self.wandb_id = ""
+        self.resume_path = ""
         self.debug = False
 
         self.ocr_config_path = 'ez/ocr/slate/config/navigation5x5.yaml'
@@ -223,7 +225,7 @@ class Shapes2dTestConfig(BaseConfig):
             total_transitions=10 * 1000,
             transition_num=1,
             # frame skip & stack observation
-            frame_skip=1,
+            frame_skip=0,
             stacked_observations=1,
             # coefficient
             reward_loss_coeff=1,
@@ -255,7 +257,9 @@ class Shapes2dTestConfig(BaseConfig):
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
         self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
         self.wandb_project = "ez-v1"
-        self.debug = True
+        self.wandb_id = ""
+        self.resume_path = ""
+        self.debug = False
 
         self.ocr_config_path = 'ez/ocr/slate/config/navigation5x5.yaml'
         self.checkpoint_path = 'ez/ocr/slate_weights/navigation5х5.pth'

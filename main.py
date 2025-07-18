@@ -98,11 +98,13 @@ if __name__ == '__main__':
     device = game_config.device
     try:
         if args.opr == 'train':
-            if game_config.debug:
+            if not game_config.debug:
                 wandb.init(
                     name=wandb_name,
                     project=game_config.wandb_project,
                     sync_tensorboard=True,
+                    id = game_config.wandb_id,
+                    resume="allow",
                     config=vars(args),
                     dir=exp_path
                 )

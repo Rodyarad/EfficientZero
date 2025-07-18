@@ -12,13 +12,13 @@ class AtariConfig(BaseConfig):
         super(AtariConfig, self).__init__(
             training_steps=100000,
             last_steps=20000,
-            test_interval=10000,
-            log_interval=1000,
-            vis_interval=1000,
-            test_episodes=32,
+            test_interval=5000,
+            log_interval=1,
+            vis_interval=100,
+            test_episodes=30,
             checkpoint_interval=100,
             target_model_interval=200,
-            save_ckpt_interval=10000,
+            save_ckpt_interval=5000,
             max_moves=12000,
             test_max_moves=12000,
             history_length=400,
@@ -82,6 +82,8 @@ class AtariConfig(BaseConfig):
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
         self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
         self.wandb_project = "ez-v1"
+        self.wandb_id = ""
+        self.resume_path = ""
         self.debug = False
 
 
@@ -244,6 +246,8 @@ class AtariTestConfig(BaseConfig):
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
         self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
         self.wandb_project = "ez-v1"
+        self.wandb_id = ""
+        self.resume_path = ""
         self.debug = True
 
 

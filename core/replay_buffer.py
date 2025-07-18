@@ -1,6 +1,7 @@
 import ray
 import time
-
+import os
+import pickle
 import numpy as np
 
 
@@ -171,3 +172,60 @@ class ReplayBuffer(object):
     def get_total_len(self):
         # number of transitions
         return len(self.priorities)
+
+    def save_buffer(self, path):
+        f_buffer = open(os.path.join(path, 'buffer.b'), 'wb')
+        pickle.dump(self.buffer, f_buffer)
+        f_buffer.close()
+        f_priorities = open(os.path.join(path, 'priorities.b'), 'wb')
+        pickle.dump(self.priorities, f_priorities)
+        f_priorities.close()
+        f_lookup = open(os.path.join(path, 'lookup.b'), 'wb')
+        pickle.dump(self.game_look_up, f_lookup)
+        f_lookup.close()
+
+        attributes = {
+            'config': self.config,
+            'batch_size': self.batch_size,
+            'keep_ratio': self.keep_ratio,
+            'model_index': self.model_index,
+            'model_update_interval': self.model_update_interval,
+            'eps_collected': self._eps_collected,
+            'base_idx': self.base_idx,
+            'alpha': self._alpha,
+            'transition_top': self.transition_top,
+            'clear_time': self.clear_time
+        }
+        f_attributes = open(os.path.join(path, 'buffer_attributes.b'), 'wb')
+        pickle.dump(attributes, f_attributes)
+        f_attributes.close()
+
+        return True
+
+    def load_buffer(self, path):
+        f = open(os.path.join(path, 'buffer/buffer.b'), 'rb')
+        self.buffer = pickle.load(f)
+        f.close()
+        f = open(os.path.join(path, 'buffer/priorities.b'), 'rb')
+        self.priorities = pickle.load(f)
+        f.close()
+        f = open(os.path.join(path, 'buffer/lookup.b'), 'rb')
+        self.game_look_up = pickle.load(f)
+        f.close()
+
+        f_attributes = open(os.path.join(path, 'buffer/buffer_attributes.b'), 'rb')
+        attributes = pickle.load(f_attributes)
+        f_attributes.close()
+
+        self.config = attributes['config']
+        self.batch_size = attributes['batch_size']
+        self.keep_ratio = attributes['keep_ratio']
+        self.model_index = attributes['model_index']
+        self.model_update_interval = attributes['model_update_interval']
+        self._eps_collected = attributes['eps_collected']
+        self.base_idx = attributes['base_idx']
+        self._alpha = attributes['alpha']
+        self.transition_top = attributes['transition_top']
+        self.clear_time = attributes['clear_time']
+
+        return True

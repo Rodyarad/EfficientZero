@@ -70,22 +70,18 @@ class BaseNet(nn.Module):
     def prediction(self, state):
         raise NotImplementedError
 
-    def representation(self, obs_history):
-        raise NotImplementedError
-
     def dynamics(self, state, reward_hidden, action):
         raise NotImplementedError
 
     def initial_inference(self, obs) -> NetworkOutput:
         num = obs.size(0)
 
-        state = self.representation(obs)
-        actor_logit, value = self.prediction(state)
+        actor_logit, value = self.prediction(obs)
 
         if not self.training:
             # if not in training, obtain the scalars of the value/reward
             value = self.inverse_value_transform(value).detach().cpu().numpy()
-            state = state.detach().cpu().numpy()
+            state = obs.detach().cpu().numpy()
             actor_logit = actor_logit.detach().cpu().numpy()
             # zero initialization for reward (value prefix) hidden states
             reward_hidden = torch.zeros(1, num, self.n_slots, self.rnn_hidden_size).detach().cpu().numpy()

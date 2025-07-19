@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ocr.tools import Tensor
+from ...tools import Tensor
 
 
 # Taken from https://github.com/addtt/object-centric-library/blob/main/models/shared/nn.py#L45-L67

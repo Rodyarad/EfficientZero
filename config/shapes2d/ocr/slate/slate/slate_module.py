@@ -4,18 +4,18 @@ from torch import nn
 from torch.nn import functional as F
 from itertools import chain
 
-from ocr.tools import Tensor, img_to_slot, calculate_ari, for_viz, visualize
-from ocr.slate.common.utils import (
+from ...tools import Tensor, img_to_slot, calculate_ari, for_viz, visualize
+from ..common.utils import (
     cosine_anneal,
     gumbel_softmax,
     PositionalEmbedding,
 )
-from ocr.slate.common.networks import linear
-from ocr.slate.common.models import SlotAttnCNNEncoder, dVAE
-from ocr.slate.common.slot_attn import SlotAttentionEncoder
-from ocr.slate.common.transformer import LearnedPositionalEncoding, TransformerDecoder
+from ..common.networks import linear
+from ..common.models import SlotAttnCNNEncoder, dVAE
+from ..common.slot_attn import SlotAttentionEncoder
+from ..common.transformer import LearnedPositionalEncoding, TransformerDecoder
 
-from ocr.slate.common.models import BroadCastDecoder
+from ..common.models import BroadCastDecoder
 
 
 class SLATE_Module(nn.Module):

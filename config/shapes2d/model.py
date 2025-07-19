@@ -292,6 +292,7 @@ class OCPredictionNetwork(nn.Module):
 class ObjectZero(BaseNet):
     def __init__(
         self,
+        obs_shape,
         slot_dim,
         laten_dim,
         n_slots,

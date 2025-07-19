@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from torch.nn.utils import clip_grad_norm_
 
-from ocr.tools import Tensor, optimizer_to
+from ..tools import Tensor, optimizer_to
 
 
 class BaseFeaturesExtractor(nn.Module):

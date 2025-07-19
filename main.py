@@ -23,9 +23,6 @@ if __name__ == '__main__':
     parser.add_argument('--amp_type', required=True, choices=['torch_amp', 'none'],
                         help='choose automated mixed precision type')
     parser.add_argument('--no_cuda', action='store_true', default=False, help='no cuda usage (default: %(default)s)')
-    parser.add_argument('--debug', action='store_true', default=False,
-                        help='If enabled, logs additional values  '
-                             '(gradients, target value, reward distribution, etc.) (default: %(default)s)')
     parser.add_argument('--render', action='store_true', default=False,
                         help='Renders the environment (default: %(default)s)')
     parser.add_argument('--save_video', action='store_true', default=False, help='save video in test.')
@@ -46,7 +43,6 @@ if __name__ == '__main__':
                              'Also, priority for new data is calculated based on loss (default: False)')
     parser.add_argument('--use_max_priority', action='store_true', default=False, help='max priority')
     parser.add_argument('--test_episodes', type=int, default=10, help='Evaluation episode count (default: %(default)s)')
-    parser.add_argument('--use_augmentation', action='store_true', default=True, help='use augmentation')
     parser.add_argument('--augmentation', type=str, default=['shift', 'intensity'], nargs='+',
                         choices=['none', 'rrc', 'affine', 'crop', 'blur', 'shift', 'intensity'],
                         help='Style of augmentation')

@@ -4,12 +4,12 @@ from core.config import BaseConfig
 from core.utils import WarpFrame, EpisodicLifeEnv, TimeLimit
 from core.dataset import Transforms
 from .env_wrapper import Shapes2dWrapper, SlotExtractor, SlotExtractorWrapper
-from .model import EfficientZeroNet
+from .model import ObjectZero
 from .shapes2d import Shapes2d
 from . import register
 from omegaconf import OmegaConf
 from collections import namedtuple
-from ocr.slate.slate import SLATE
+from .ocr.slate.slate import SLATE
 import gym
 
 
@@ -41,7 +41,7 @@ class Shapes2dConfig(BaseConfig):
             clip_reward=True,
             # storage efficient
             cvt_string=True,
-            image_based=True,
+            image_based=False,
             # lr scheduler
             lr_warm_up=0.01,
             lr_init=0.2,
@@ -63,23 +63,14 @@ class Shapes2dConfig(BaseConfig):
             # reward sum
             rnn_hidden_size=512,
             rnn_horizon_len=5,
-            # siamese
-            proj_hid=1024,
-            proj_out=1024,
-            pred_hid=512,
-            pred_out=1024,)
+            debug = True,
+        )
 
         self.start_transitions = self.start_transitions * 1000
         self.start_transitions = max(1, self.start_transitions)
 
         self.bn_mt = 0.1
         self.blocks = 1  # Number of blocks in the ResNet
-        self.channels = 64  # Number of channels in the ResNet
-        if self.gray_scale:
-            self.channels = 32
-        self.reduced_channels_reward = 16  # x36 Number of channels in reward head
-        self.reduced_channels_value = 16  # x36 Number of channels in value head
-        self.reduced_channels_policy = 16  # x36 Number of channels in policy head
         self.resnet_fc_reward_layers = [32]  # Define the hidden layers in the reward head of the dynamic network
         self.resnet_fc_value_layers = [32]  # Define the hidden layers in the value head of the prediction network
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
@@ -87,7 +78,6 @@ class Shapes2dConfig(BaseConfig):
         self.wandb_project = "ez-v1"
         self.wandb_id = ""
         self.resume_path = ""
-        self.debug = False
 
         self.ocr_config_path = 'ez/ocr/slate/config/navigation5x5.yaml'
         self.checkpoint_path = 'ez/ocr/slate_weights/navigation5х5.pth'
@@ -110,40 +100,32 @@ class Shapes2dConfig(BaseConfig):
 
     def set_game(self, env_name, save_video=False, save_path=None, video_callable=None):
         self.env_name = env_name
-        # gray scale
-        if self.gray_scale:
-            self.image_channel = 1
-        obs_shape = (self.image_channel, 96, 96)
+        obs_shape = (self.image_channel, 64, 64)
         self.obs_shape = (obs_shape[0] * self.stacked_observations, obs_shape[1], obs_shape[2])
 
         game = self.new_game()
-        self.action_space_size = game.action_space_size
+        self.action_space_size = game.action_space.n
 
     def get_uniform_network(self):
-        return EfficientZeroNet(
-            self.obs_shape,
-            self.action_space_size,
-            self.blocks,
-            self.channels,
-            self.reduced_channels_reward,
-            self.reduced_channels_value,
-            self.reduced_channels_policy,
-            self.resnet_fc_reward_layers,
-            self.resnet_fc_value_layers,
-            self.resnet_fc_policy_layers,
-            self.reward_support.size,
-            self.value_support.size,
-            self.downsample,
-            self.inverse_value_transform,
-            self.inverse_reward_transform,
-            self.rnn_hidden_size,
+        return ObjectZero(
+            obs_shape = self.obs_shape,
+            slot_dim=self.slot_dim,
+            laten_dim=self.latent_dim,
+            n_slots=self.num_slots,
+            action_space_size=self.action_space_size,
+            update_bias=-1,
+            fc_reward_layers=self.resnet_fc_reward_layers,
+            fc_value_layers=self.resnet_fc_value_layers,
+            fc_policy_layers=self.resnet_fc_policy_layers,
+            reward_support_size=self.reward_support.size,
+            value_support_size=self.value_support.size,
+            inverse_value_transform=self.inverse_value_transform,
+            inverse_reward_transform=self.inverse_reward_transform,
+            rnn_hidden_size=self.rnn_hidden_size,
             bn_mt=self.bn_mt,
-            proj_hid=self.proj_hid,
-            proj_out=self.proj_out,
-            pred_hid=self.pred_hid,
-            pred_out=self.pred_out,
             init_zero=self.init_zero,
-            state_norm=self.state_norm)
+            state_norm=self.state_norm
+        )
 
     def new_game(self, seed=None, save_video=False, save_path=None, video_callable=None, uid=None, test=False, final_test=False):
         env = gym.make(self.env_name)
@@ -177,9 +159,6 @@ class Shapes2dConfig(BaseConfig):
     def scalar_value_loss(self, prediction, target):
         return -(torch.log_softmax(prediction, dim=1) * target).sum(1)
 
-    def set_transforms(self):
-        if self.use_augmentation:
-            self.transforms = Transforms(self.augmentation, image_shape=(self.obs_shape[1], self.obs_shape[2]))
 
     def transform(self, images):
         return self.transforms.transform(images)
@@ -213,7 +192,7 @@ class Shapes2dTestConfig(BaseConfig):
             clip_reward=True,
             # storage efficient
             cvt_string=True,
-            image_based=True,
+            image_based=False,
             # lr scheduler
             lr_warm_up=0.01,
             lr_init=0.2,
@@ -235,34 +214,23 @@ class Shapes2dTestConfig(BaseConfig):
             # reward sum
             rnn_hidden_size=512,
             rnn_horizon_len=5,
-            # siamese
-            proj_hid=1024,
-            proj_out=1024,
-            pred_hid=512,
-            pred_out=1024,)
+            debug = True,
+        )
 
-        self.start_transitions = self.start_transitions * 1000
+        self.start_transitions = self.start_transitions
         self.start_transitions = max(1, self.start_transitions)
 
         self.bn_mt = 0.1
         self.blocks = 1  # Number of blocks in the ResNet
-        self.channels = 64  # Number of channels in the ResNet
-        if self.gray_scale:
-            self.channels = 32
-        self.reduced_channels_reward = 16  # x36 Number of channels in reward head
-        self.reduced_channels_value = 16  # x36 Number of channels in value head
-        self.reduced_channels_policy = 16  # x36 Number of channels in policy head
         self.resnet_fc_reward_layers = [32]  # Define the hidden layers in the reward head of the dynamic network
         self.resnet_fc_value_layers = [32]  # Define the hidden layers in the value head of the prediction network
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
-        self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
         self.wandb_project = "ez-v1"
         self.wandb_id = ""
         self.resume_path = ""
-        self.debug = False
 
-        self.ocr_config_path = 'ez/ocr/slate/config/navigation5x5.yaml'
-        self.checkpoint_path = 'ez/ocr/slate_weights/navigation5х5.pth'
+        self.ocr_config_path = 'config/shapes2d/ocr/slate/config/navigation5x5.yaml'
+        self.checkpoint_path = 'config/shapes2d/ocr/slate_weights/navigation5х5.pth'
         self.num_slots = 6
         self.slot_dim = 64
         self.latent_dim = 512
@@ -282,40 +250,32 @@ class Shapes2dTestConfig(BaseConfig):
 
     def set_game(self, env_name, save_video=False, save_path=None, video_callable=None):
         self.env_name = env_name
-        # gray scale
-        if self.gray_scale:
-            self.image_channel = 1
-        obs_shape = (self.image_channel, 96, 96)
+        obs_shape = (self.image_channel, 64, 64)
         self.obs_shape = (obs_shape[0] * self.stacked_observations, obs_shape[1], obs_shape[2])
 
         game = self.new_game()
-        self.action_space_size = game.action_space_size
+        self.action_space_size = game.action_space.n
 
     def get_uniform_network(self):
-        return EfficientZeroNet(
-            self.obs_shape,
-            self.action_space_size,
-            self.blocks,
-            self.channels,
-            self.reduced_channels_reward,
-            self.reduced_channels_value,
-            self.reduced_channels_policy,
-            self.resnet_fc_reward_layers,
-            self.resnet_fc_value_layers,
-            self.resnet_fc_policy_layers,
-            self.reward_support.size,
-            self.value_support.size,
-            self.downsample,
-            self.inverse_value_transform,
-            self.inverse_reward_transform,
-            self.rnn_hidden_size,
+        return ObjectZero(
+            obs_shape = self.obs_shape,
+            slot_dim=self.slot_dim,
+            laten_dim=self.latent_dim,
+            n_slots=self.num_slots,
+            action_space_size=self.action_space_size,
+            update_bias=-1,
+            fc_reward_layers=self.resnet_fc_reward_layers,
+            fc_value_layers=self.resnet_fc_value_layers,
+            fc_policy_layers=self.resnet_fc_policy_layers,
+            reward_support_size=self.reward_support.size,
+            value_support_size=self.value_support.size,
+            inverse_value_transform=self.inverse_value_transform,
+            inverse_reward_transform=self.inverse_reward_transform,
+            rnn_hidden_size=self.rnn_hidden_size,
             bn_mt=self.bn_mt,
-            proj_hid=self.proj_hid,
-            proj_out=self.proj_out,
-            pred_hid=self.pred_hid,
-            pred_out=self.pred_out,
             init_zero=self.init_zero,
-            state_norm=self.state_norm)
+            state_norm=self.state_norm
+        )
 
     def new_game(self, seed=None, save_video=False, save_path=None, video_callable=None, uid=None, test=False, final_test=False):
         env = gym.make(self.env_name)
@@ -348,10 +308,6 @@ class Shapes2dTestConfig(BaseConfig):
 
     def scalar_value_loss(self, prediction, target):
         return -(torch.log_softmax(prediction, dim=1) * target).sum(1)
-
-    def set_transforms(self):
-        if self.use_augmentation:
-            self.transforms = Transforms(self.augmentation, image_shape=(self.obs_shape[1], self.obs_shape[2]))
 
     def transform(self, images):
         return self.transforms.transform(images)

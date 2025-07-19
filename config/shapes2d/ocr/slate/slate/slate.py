@@ -3,10 +3,10 @@ import math
 import gym
 import torch
 
-from ocr.slate.base import Base
-from ocr.slate.common.utils import linear_warmup
+from ..base import Base
+from ..common.utils import linear_warmup
 from .slate_module import SLATE_Module
-from ocr.tools import Tensor
+from ...tools import Tensor
 
 
 class SLATE(Base):

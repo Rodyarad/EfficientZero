@@ -61,7 +61,9 @@ class AtariConfig(BaseConfig):
             proj_hid=1024,
             proj_out=1024,
             pred_hid=512,
-            pred_out=1024,)
+            pred_out=1024,
+            debug=False
+        )
         self.discount **= self.frame_skip
         self.max_moves //= self.frame_skip
         self.test_max_moves //= self.frame_skip
@@ -84,7 +86,6 @@ class AtariConfig(BaseConfig):
         self.wandb_project = "ez-v1"
         self.wandb_id = ""
         self.resume_path = ""
-        self.debug = False
 
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):
@@ -225,7 +226,9 @@ class AtariTestConfig(BaseConfig):
             proj_hid=1024,
             proj_out=1024,
             pred_hid=512,
-            pred_out=1024,)
+            pred_out=1024,
+            debug=True
+        )
         self.discount **= self.frame_skip
         self.max_moves //= self.frame_skip
         self.test_max_moves //= self.frame_skip
@@ -248,8 +251,6 @@ class AtariTestConfig(BaseConfig):
         self.wandb_project = "ez-v1"
         self.wandb_id = ""
         self.resume_path = ""
-        self.debug = True
-
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):
         if self.change_temperature:

@@ -64,7 +64,9 @@ class Shapes2dConfig(BaseConfig):
             proj_hid=1024,
             proj_out=1024,
             pred_hid=512,
-            pred_out=1024,)
+            pred_out=1024,
+            debug=False
+        )
 
         self.start_transitions = self.start_transitions * 1000
         self.start_transitions = max(1, self.start_transitions)
@@ -84,7 +86,6 @@ class Shapes2dConfig(BaseConfig):
         self.wandb_project = "ez-v1"
         self.wandb_id = ""
         self.resume_path = ""
-        self.debug = False
 
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):
@@ -217,7 +218,9 @@ class Shapes2dTestConfig(BaseConfig):
             proj_hid=1024,
             proj_out=1024,
             pred_hid=512,
-            pred_out=1024,)
+            pred_out=1024,
+            debug=True
+        )
 
         self.start_transitions = self.start_transitions * 1000
         self.start_transitions = max(1, self.start_transitions)
@@ -237,7 +240,6 @@ class Shapes2dTestConfig(BaseConfig):
         self.wandb_project = "ez-v1"
         self.wandb_id = ""
         self.resume_path = ""
-        self.debug = False
 
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):

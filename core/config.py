@@ -72,7 +72,9 @@ class BaseConfig(object):
                  pred_hid: int = 64,
                  pred_out: int = 256,
                  value_support: DiscreteSupport = DiscreteSupport(-300, 300, delta=1),
-                 reward_support: DiscreteSupport = DiscreteSupport(-300, 300, delta=1)):
+                 reward_support: DiscreteSupport = DiscreteSupport(-300, 300, delta=1),
+                 debug: bool = True,
+            ):
         """Base Config for EfficietnZero
         Parameters
         ----------
@@ -253,7 +255,7 @@ class BaseConfig(object):
         self.consistency_coeff = consistency_coeff
         self.device = 'cuda'
         self.exp_path = None  # experiment path
-        self.debug = False
+        self.debug = debug
         self.model_path = None
         self.seed = None
         self.transforms = None
@@ -379,7 +381,6 @@ class BaseConfig(object):
         self.amp_type = args.amp_type
         self.use_priority = args.use_priority
         self.use_max_priority = args.use_max_priority if self.use_priority else False
-        self.debug = args.debug
         self.device = args.device
         self.cpu_actor = args.cpu_actor
         self.gpu_actor = args.gpu_actor

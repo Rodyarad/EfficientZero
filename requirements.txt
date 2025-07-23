@@ -14,3 +14,4 @@ scikit-image==0.18.3
 pywavelets<=1.4.1
 tdqm
 ipdb
+comet_ml

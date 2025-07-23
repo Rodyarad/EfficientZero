@@ -41,7 +41,7 @@ def _log(config, step_count, log_data, model, replay_buffer, lr, shared_storage,
         test_logger.info(test_msg)
 
     if summary_writer is not None:
-        if not config.debug:
+        if config.debug:
             for name, W in model.named_parameters():
                 summary_writer.add_histogram('after_grad_clip' + '/' + name + '_grad', W.grad.data.cpu().numpy(),
                                              step_count)

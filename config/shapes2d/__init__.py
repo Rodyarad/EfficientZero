@@ -63,7 +63,7 @@ class Shapes2dConfig(BaseConfig):
             # reward sum
             rnn_hidden_size=512,
             rnn_horizon_len=5,
-            debug = True,
+            debug = False,
         )
 
         self.start_transitions = self.start_transitions * 1000
@@ -75,8 +75,8 @@ class Shapes2dConfig(BaseConfig):
         self.resnet_fc_value_layers = [32]  # Define the hidden layers in the value head of the prediction network
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
         self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
-        self.wandb_project = "ez-v1"
-        self.wandb_id = ""
+        self.name_project = "objectzero"
+        self.run_id = ""
         self.resume_path = ""
 
         self.ocr_config_path = 'ez/ocr/slate/config/navigation5x5.yaml'
@@ -225,8 +225,9 @@ class Shapes2dTestConfig(BaseConfig):
         self.resnet_fc_reward_layers = [32]  # Define the hidden layers in the reward head of the dynamic network
         self.resnet_fc_value_layers = [32]  # Define the hidden layers in the value head of the prediction network
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
-        self.wandb_project = "ez-v1"
-        self.wandb_id = ""
+        self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
+        self.name_project = "objectzero"
+        self.run_id = ""
         self.resume_path = ""
 
         self.ocr_config_path = 'config/shapes2d/ocr/slate/config/navigation5x5.yaml'

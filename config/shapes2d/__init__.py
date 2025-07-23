@@ -83,8 +83,8 @@ class Shapes2dConfig(BaseConfig):
         self.resnet_fc_value_layers = [32]  # Define the hidden layers in the value head of the prediction network
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
         self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
-        self.wandb_project = "ez-v1"
-        self.wandb_id = ""
+        self.name_project = "objectzero"
+        self.run_id = ""
         self.resume_path = ""
 
 
@@ -237,8 +237,8 @@ class Shapes2dTestConfig(BaseConfig):
         self.resnet_fc_value_layers = [32]  # Define the hidden layers in the value head of the prediction network
         self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
         self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
-        self.wandb_project = "ez-v1"
-        self.wandb_id = ""
+        self.name_project = "objectzero"
+        self.run_id = ""
         self.resume_path = ""
 
 

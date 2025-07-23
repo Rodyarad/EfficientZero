@@ -40,7 +40,7 @@ class Shapes2dConfig(BaseConfig):
             init_zero=True,
             clip_reward=True,
             # storage efficient
-            cvt_string=True,
+            cvt_string=False,
             image_based=False,
             # lr scheduler
             lr_warm_up=0.01,
@@ -212,7 +212,7 @@ class Shapes2dTestConfig(BaseConfig):
             policy_loss_coeff=1,
             consistency_coeff=2,
             # reward sum
-            rnn_hidden_size=512,
+            rnn_hidden_size=64,
             rnn_horizon_len=5,
             debug = True,
         )

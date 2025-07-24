@@ -197,7 +197,9 @@ class BatchWorker_CPU(object):
 
         re_num = int(batch_size * ratio)
         # formalize the input observations
-        obs_lst = prepare_observation_lst(obs_lst)
+        # TODO check
+        obs_lst = prepare_observation_lst(obs_lst, self.config.image_based,
+                                          self.config.slot_based, 'cpu')
 
         # formalize the inputs of a batch
         inputs_batch = [obs_lst, action_lst, mask_lst, indices_lst, weights_lst, make_time_lst]
@@ -305,6 +307,7 @@ class BatchWorker_GPU(object):
 
         batch_values, batch_value_prefixs = [], []
         with torch.no_grad():
+            #TODO check
             value_obs_lst = prepare_observation_lst(value_obs_lst)
             # split a full batch into slices of mini_infer_size: to save the GPU memory for more GPU actors
             m_batch = self.config.mini_infer_size
@@ -396,6 +399,7 @@ class BatchWorker_GPU(object):
         device = self.config.device
 
         with torch.no_grad():
+            # TODO check
             policy_obs_lst = prepare_observation_lst(policy_obs_lst)
             # split a full batch into slices of mini_infer_size: to save the GPU memory for more GPU actors
             m_batch = self.config.mini_infer_size

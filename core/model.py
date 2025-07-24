@@ -75,7 +75,8 @@ class BaseNet(nn.Module):
 
     def initial_inference(self, obs) -> NetworkOutput:
         num = obs.size(0)
-
+        import ipdb
+        ipdb.set_trace()
         actor_logit, value = self.prediction(obs)
 
         if not self.training:

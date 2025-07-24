@@ -137,7 +137,6 @@ class DataWorker(object):
 
                 # stack observation windows in boundary: s398, s399, s400, current s1 -> for not init trajectory
                 stack_obs_windows = [[] for _ in range(env_nums)]
-
                 for i in range(env_nums):
                     stack_obs_windows[i] = [init_obses[i] for _ in range(self.config.stacked_observations)]
                     game_histories[i].init(stack_obs_windows[i])
@@ -160,6 +159,7 @@ class DataWorker(object):
 
                 self_play_visit_entropy = []
                 other_dist = {}
+
 
                 # play games until max moves
                 while not dones.all() and (step_counter <= self.config.max_moves):
@@ -258,15 +258,9 @@ class DataWorker(object):
                             eps_reward_lst[i] = 0
                             eps_ori_reward_lst[i] = 0
                             visit_entropies_lst[i] = 0
-
                     # stack obs for model inference
                     stack_obs = [game_history.step_obs() for game_history in game_histories]
-                    if self.config.image_based:
-                        stack_obs = prepare_observation_lst(stack_obs)
-                        stack_obs = torch.from_numpy(stack_obs).to(self.device).float() / 255.0
-                    else:
-                        stack_obs = [game_history.step_obs() for game_history in game_histories]
-                        stack_obs = torch.from_numpy(np.array(stack_obs)).to(self.device)
+                    stack_obs = prepare_observation_lst(stack_obs,self.config.image_based, self.config.slot_based, self.device)
 
                     if self.config.amp_type == 'torch_amp':
                         with autocast():

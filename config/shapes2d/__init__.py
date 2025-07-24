@@ -84,6 +84,7 @@ class Shapes2dConfig(BaseConfig):
         self.num_slots = 6
         self.slot_dim = 64
         self.latent_dim = 512
+        self.slot_based = True
 
 
 
@@ -191,7 +192,7 @@ class Shapes2dTestConfig(BaseConfig):
             init_zero=True,
             clip_reward=True,
             # storage efficient
-            cvt_string=True,
+            cvt_string=False,
             image_based=False,
             # lr scheduler
             lr_warm_up=0.01,
@@ -235,6 +236,7 @@ class Shapes2dTestConfig(BaseConfig):
         self.num_slots = 6
         self.slot_dim = 64
         self.latent_dim = 512
+        self.slot_based = True
 
 
 

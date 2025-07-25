@@ -97,6 +97,7 @@ def test(config, model, counter, test_episodes, device, render, save_video=False
                 for i in range(test_episodes):
                     envs[i].render()
 
+            stack_obs = [game_history.step_obs() for game_history in game_histories]
             stack_obs = prepare_observation_lst(stack_obs, config.image_based, config.slot_based, device)
 
             with autocast():

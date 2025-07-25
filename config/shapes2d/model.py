@@ -247,7 +247,7 @@ class OCDynamicsNetwork(nn.Module):
         hidden = (update * cand + (1 - update) * x)
         value_prefix = self.fc(hidden.sum(dim=1))
 
-        return state, reward_hidden.unsqueeze(0), value_prefix
+        return state, hidden.unsqueeze(0), value_prefix
 
 class OCPredictionNetwork(nn.Module):
     def __init__(

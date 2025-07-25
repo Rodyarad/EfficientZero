@@ -154,13 +154,13 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
                 # consistency loss
                 if config.consistency_coeff > 0:
                     # obtain the oracle hidden states from representation function
-                    _, _, _, presentation_state, _ = model.initial_inference(obs_target_batch[:, beg_index:end_index, :, :])
+                    #_, _, _, presentation_state, _ = model.initial_inference(obs_target_batch[:, beg_index:end_index, :, :])
                     # no grad for the presentation_state branch
                     # dynamic_proj = model.project(hidden_state, with_grad=True)
                     # observation_proj = model.project(presentation_state, with_grad=False)
                     # temp_loss = consist_loss_func(dynamic_proj, observation_proj) * mask_batch[:, step_i]
-
-                    temp_loss = consist_loss_func(hidden_state, presentation_state) * mask_batch[:, step_i]
+                    gt_state = obs_target_batch[:, beg_index:end_index, :, :].squeeze(1)
+                    temp_loss = mse_loss_func(hidden_state, gt_state) * mask_batch[:, step_i]
 
                     other_loss['consist_' + str(step_i + 1)] = temp_loss.mean().item()
                     consistency_loss += temp_loss
@@ -173,7 +173,7 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
 
                 # reset hidden states
                 if (step_i + 1) % config.rnn_horizon_len == 0:
-                    reward_hidden = torch.zeros(1, config.batch_size, config.n_slots, config.rnn_hidden_size).to(config.device)
+                    reward_hidden = torch.zeros(1, config.batch_size, config.num_slots, config.rnn_hidden_size).to(config.device)
 
                 if vis_result:
                     scaled_value_prefixs = config.inverse_reward_transform(value_prefix.detach())
@@ -210,13 +210,13 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
             # consistency loss
             if config.consistency_coeff > 0:
                 # obtain the oracle hidden states from representation function
-                _, _, _, presentation_state, _ = model.initial_inference(obs_target_batch[:, beg_index:end_index, :, :])
+                #_, _, _, presentation_state, _ = model.initial_inference(obs_target_batch[:, beg_index:end_index, :, :])
                 # no grad for the presentation_state branch
                 # dynamic_proj = model.project(hidden_state, with_grad=True)
                 # observation_proj = model.project(presentation_state, with_grad=False)
                 # temp_loss = consist_loss_func(dynamic_proj, observation_proj) * mask_batch[:, step_i]
-
-                temp_loss = consist_loss_func(hidden_state, presentation_state) * mask_batch[:, step_i]
+                gt_state = obs_target_batch[:, beg_index:end_index, :, :].squeeze(1)
+                temp_loss = mse_loss_func(hidden_state, gt_state) * mask_batch[:, step_i]
 
                 other_loss['consist_' + str(step_i + 1)] = temp_loss.mean().item()
                 consistency_loss += temp_loss
@@ -229,7 +229,7 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
 
             # reset hidden states
             if (step_i + 1) % config.rnn_horizon_len == 0:
-                reward_hidden = torch.zeros(1, config.batch_size, config.n_slots, config.rnn_hidden_size).to(config.device)
+                reward_hidden = torch.zeros(1, config.batch_size, config.num_slots, config.rnn_hidden_size).to(config.device)
 
             if vis_result:
                 scaled_value_prefixs = config.inverse_reward_transform(value_prefix.detach())

@@ -36,7 +36,7 @@ def concat_output(output_lst):
         reward_lst.append(output.value_prefix)
         policy_logits_lst.append(output.policy_logits)
         hidden_state_lst.append(output.hidden_state)
-        reward_hidden_h_lst.append(output.reward_hidden[0].squeeze(0))
+        reward_hidden_h_lst.append(output.reward_hidden.squeeze(0))
 
     value_lst = np.concatenate(value_lst)
     reward_lst = np.concatenate(reward_lst)
@@ -81,7 +81,7 @@ class BaseNet(nn.Module):
         if not self.training:
             # if not in training, obtain the scalars of the value/reward
             value = self.inverse_value_transform(value).detach().cpu().numpy()
-            state = obs.detach().cpu().numpy()
+            obs = obs.detach().cpu().numpy()
             actor_logit = actor_logit.detach().cpu().numpy()
             # zero initialization for reward (value prefix) hidden states
             reward_hidden = torch.zeros(1, num, self.n_slots, self.rnn_hidden_size).detach().cpu().numpy()
@@ -89,7 +89,7 @@ class BaseNet(nn.Module):
             # zero initialization for reward (value prefix) hidden states
             reward_hidden = torch.zeros(1, num, self.n_slots, self.rnn_hidden_size).to('cuda')
 
-        return NetworkOutput(value, [0. for _ in range(num)], actor_logit, state, reward_hidden)
+        return NetworkOutput(value, [0. for _ in range(num)], actor_logit, obs, reward_hidden)
 
     def recurrent_inference(self, hidden_state, reward_hidden, action) -> NetworkOutput:
         state, reward_hidden, value_prefix = self.dynamics(hidden_state, reward_hidden, action)
@@ -100,7 +100,7 @@ class BaseNet(nn.Module):
             value = self.inverse_value_transform(value).detach().cpu().numpy()
             value_prefix = self.inverse_reward_transform(value_prefix).detach().cpu().numpy()
             state = state.detach().cpu().numpy()
-            reward_hidden = reward_hidden[0].detach().cpu().numpy()
+            reward_hidden = reward_hidden.detach().cpu().numpy()
             actor_logit = actor_logit.detach().cpu().numpy()
 
         return NetworkOutput(value, value_prefix, actor_logit, state, reward_hidden)

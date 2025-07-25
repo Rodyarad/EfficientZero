@@ -223,27 +223,23 @@ class OCDynamicsNetwork(nn.Module):
         self.latent_dim = latent_dim
         self.action_space_size = action_space_size
         self.n_slots = n_slots
-        self.gnn = GNN(input_dim=self.slot_dim, hidden_dim=self.latent_dim,
+        self.gnn_dyn = GNN(input_dim=self.slot_dim, hidden_dim=self.latent_dim,
                               action_dim=self.action_space_size, num_objects=self.n_slots, ignore_action=False,
                               copy_action=True, edge_actions=True)
 
-
-        self.slot_dim = slot_dim
-        self.latent_dim = latent_dim
         self.rnn_hidden_size = rnn_hidden_size
-        self.n_slots = n_slots
         self.act = nn.Tanh()
         self.update_bias = update_bias
-        self.gnn = GNN(self.slot_dim + self.rnn_hidden_size, hidden_dim=self.latent_dim, action_dim=0, num_objects=self.n_slots,
+        self.gnn_prefix = GNN(self.slot_dim + self.rnn_hidden_size, hidden_dim=self.latent_dim, action_dim=0, num_objects=self.n_slots,
                         ignore_action=True, copy_action=False, edge_actions=False, output_dim=3 * self.rnn_hidden_size)
         self.fc = mlp(rnn_hidden_size, fc_reward_layers, full_support_size, init_zero=init_zero, momentum=momentum)
 
     def forward(self, x, action, reward_hidden):
-        state = self.gnn(x, action)
+        state = self.gnn_dyn(x, action)
 
         hidden = reward_hidden.squeeze(0)
         full_state = torch.cat([x, hidden], dim=-1)
-        parts = self.gnn(full_state, None)[0]
+        parts = self.gnn_prefix(full_state, None)[0]
         reset, cand, update = torch.split(parts, [self.rnn_hidden_size] * 3, dim=-1)
         reset = torch.sigmoid(reset)
         cand = self.act(reset * cand)
@@ -343,14 +339,6 @@ class ObjectZero(BaseNet):
     def prediction(self, encoded_state):
         policy, value = self.prediction_network(encoded_state)
         return policy, value
-
-    def representation(self, observation):
-        encoded_state = self.representation_network(observation)
-        if not self.state_norm:
-            return encoded_state
-        else:
-            encoded_state_normalized = renormalize(encoded_state)
-            return encoded_state_normalized
 
     def dynamics(self, encoded_state, reward_hidden, action):
         next_encoded_state, reward_hidden, value_prefix = self.dynamics_network(encoded_state, action, reward_hidden)

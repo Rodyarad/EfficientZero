@@ -58,13 +58,10 @@ class MCTS(object):
                 for ix, iy in zip(hidden_state_index_x_lst, hidden_state_index_y_lst):
                     hidden_states.append(hidden_state_pool[ix][iy])
                     hidden_states_h_reward.append(reward_hidden_h_pool[ix][0][iy])
-
                 hidden_states = torch.from_numpy(np.asarray(hidden_states)).to(device).float()
-                hidden_states_h_reward = torch.from_numpy(np.asarray(hidden_states_h_reward)).to(device)#.unsqueeze(0)
+                hidden_states_h_reward = torch.from_numpy(np.asarray(hidden_states_h_reward)).to(device).unsqueeze(0)
 
                 last_actions = torch.from_numpy(np.asarray(last_actions)).to(device).unsqueeze(1).long()
-                import ipdb
-                ipdb.set_trace()
                 # evaluation for leaf nodes
                 if self.config.amp_type == 'torch_amp':
                     with autocast():
@@ -85,10 +82,10 @@ class MCTS(object):
                 assert horizons > 0
                 reset_idx = (np.array(search_lens) % horizons == 0)
                 assert len(reset_idx) == num
-                reward_hidden_nodes[0][:, reset_idx, :] = 0
+                reward_hidden_nodes[:, reset_idx, :, :] = 0
                 is_reset_lst = reset_idx.astype(np.int32).tolist()
 
-                reward_hidden_h_pool.append(reward_hidden_nodes[0])
+                reward_hidden_h_pool.append(reward_hidden_nodes)
                 hidden_state_index_x += 1
 
                 # backpropagation along the search path to update the attributes

@@ -265,7 +265,7 @@ class BatchWorker_CPU(object):
                     time.sleep(0.1)
 
 
-@ray.remote(num_gpus=0.03)
+@ray.remote(num_gpus=0.08)
 class BatchWorker_GPU(object):
     def __init__(self, worker_id, replay_buffer, storage, batch_storage, mcts_storage, config):
         """GPU Batch Worker for reanalyzing targets, see Appendix.

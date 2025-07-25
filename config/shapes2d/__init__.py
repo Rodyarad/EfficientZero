@@ -261,7 +261,6 @@ class Shapes2dTestConfig(BaseConfig):
 
     def get_uniform_network(self):
         return ObjectZero(
-            obs_shape = self.obs_shape,
             slot_dim=self.slot_dim,
             laten_dim=self.latent_dim,
             n_slots=self.num_slots,

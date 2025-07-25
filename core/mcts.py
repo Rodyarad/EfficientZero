@@ -56,14 +56,15 @@ class MCTS(object):
 
                 # obtain the states for leaf nodes
                 for ix, iy in zip(hidden_state_index_x_lst, hidden_state_index_y_lst):
-                    hidden_states.append(hidden_state_pool[ix][iy].unsqueeze(0))
+                    hidden_states.append(hidden_state_pool[ix][iy])
                     hidden_states_h_reward.append(reward_hidden_h_pool[ix][0][iy])
 
                 hidden_states = torch.from_numpy(np.asarray(hidden_states)).to(device).float()
-                hidden_states_h_reward = torch.from_numpy(np.asarray(hidden_states_h_reward)).to(device).unsqueeze(0)
+                hidden_states_h_reward = torch.from_numpy(np.asarray(hidden_states_h_reward)).to(device)#.unsqueeze(0)
 
                 last_actions = torch.from_numpy(np.asarray(last_actions)).to(device).unsqueeze(1).long()
-
+                import ipdb
+                ipdb.set_trace()
                 # evaluation for leaf nodes
                 if self.config.amp_type == 'torch_amp':
                     with autocast():

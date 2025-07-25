@@ -292,7 +292,6 @@ class OCPredictionNetwork(nn.Module):
 class ObjectZero(BaseNet):
     def __init__(
         self,
-        obs_shape,
         slot_dim,
         laten_dim,
         n_slots,
@@ -314,6 +313,7 @@ class ObjectZero(BaseNet):
         self.init_zero = init_zero
         self.state_norm = state_norm
         self.action_space_size = action_space_size
+        self.n_slots = n_slots
 
         self.dynamics_network = OCDynamicsNetwork(
             slot_dim,
@@ -325,7 +325,7 @@ class ObjectZero(BaseNet):
             reward_support_size,
             rnn_hidden_size=rnn_hidden_size,
             momentum=bn_mt,
-            init_zero=self.init_zero,
+            init_zero=init_zero,
         )
 
         self.prediction_network = OCPredictionNetwork(
@@ -337,7 +337,7 @@ class ObjectZero(BaseNet):
             fc_policy_layers,
             value_support_size,
             momentum=bn_mt,
-            init_zero=self.init_zero,
+            init_zero=init_zero,
         )
 
     def prediction(self, encoded_state):

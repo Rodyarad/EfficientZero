@@ -41,12 +41,6 @@ def _log(config, step_count, log_data, model, replay_buffer, lr, shared_storage,
         test_logger.info(test_msg)
 
     if summary_writer is not None:
-        if not config.debug:
-            for name, W in model.named_parameters():
-                summary_writer.add_histogram('after_grad_clip' + '/' + name + '_grad', W.grad.data.cpu().numpy(),
-                                             step_count)
-                summary_writer.add_histogram('network_weights' + '/' + name, W.data.cpu().numpy(), step_count)
-            pass
         tag = 'Train'
         if vis_result:
             summary_writer.add_histogram('{}_replay_data/replay_buffer_priorities'.format(tag),

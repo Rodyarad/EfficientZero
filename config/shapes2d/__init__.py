@@ -146,8 +146,13 @@ class Shapes2dConfig(BaseConfig):
             env.seed(seed)
 
         if save_video:
-            from gym.wrappers import Monitor
-            env = Monitor(env, directory=save_path, force=True, video_callable=video_callable, uid=uid)
+            from gym.wrappers.record_video import RecordVideo
+            env = RecordVideo(
+                env,
+                video_folder=save_path,
+                episode_trigger=video_callable,
+                name_prefix=f"video-{uid}"
+            )
         return Shapes2dWrapper(env, discount=self.discount, cvt_string=self.cvt_string)
 
     def scalar_reward_loss(self, prediction, target):
@@ -300,8 +305,13 @@ class Shapes2dTestConfig(BaseConfig):
             env.seed(seed)
 
         if save_video:
-            from gym.wrappers import Monitor
-            env = Monitor(env, directory=save_path, force=True, video_callable=video_callable, uid=uid)
+            from gym.wrappers.record_video import RecordVideo
+            env = RecordVideo(
+                env,
+                video_folder=save_path,
+                episode_trigger=video_callable,
+                name_prefix=f"video-{uid}"
+            )
         return Shapes2dWrapper(env, discount=self.discount, cvt_string=self.cvt_string)
 
     def scalar_reward_loss(self, prediction, target):

@@ -14,3 +14,5 @@ __pycache__/
 /core/ctree/cytree.cpp
 /core/ctree/cytree.cpython-39-x86_64-linux-gnu.so
 /core/ctree/build
+
+test.py

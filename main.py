@@ -108,19 +108,22 @@ if __name__ == '__main__':
             model, weights = train(game_config, summary_writer, model_path)
             model.set_weights(weights)
             total_steps = game_config.training_steps + game_config.last_steps
-            test_score, _, test_path = test(game_config, model.to(device), total_steps, game_config.test_episodes, device, render=False, save_video=args.save_video, final_test=True, use_pb=True)
+            test_score, test_success_rate, _, test_path = test(game_config, model.to(device), total_steps, game_config.test_episodes, device, render=False, save_video=args.save_video, final_test=True, use_pb=True)
             mean_score = test_score.mean()
+            success_rate = test_success_rate.mean()
             std_score = test_score.std()
 
             test_log = {
                 'mean_score': mean_score,
                 'std_score': std_score,
+                'success_rate': success_rate,
             }
             for key, val in test_log.items():
                 summary_writer.add_scalar('train/{}'.format(key), np.mean(val), total_steps)
 
-            test_msg = '#{:<10} Test Mean Score of {}: {:<10} (max: {:<10}, min:{:<10}, std: {:<10})' \
-                       ''.format(total_steps, game_config.env_name, mean_score, test_score.max(), test_score.min(), std_score)
+            test_msg = '#{:<10} Test Mean Score of {}: {:<10} (max: {:<10}, min:{:<10}, std: {:<10}) Success Rate: {:<10}' \
+                       ''.format(total_steps, game_config.env_name, mean_score, test_score.max(), test_score.min(),
+                                 std_score, success_rate)
             logging.getLogger('train_test').info(test_msg)
             if args.save_video:
                 logging.getLogger('train_test').info('Saving video in path: {}'.format(test_path))
@@ -134,11 +137,13 @@ if __name__ == '__main__':
 
             model = game_config.get_uniform_network().to(device)
             model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
-            test_score, _, test_path = test(game_config, model, 0, args.test_episodes, device=device, render=args.render, save_video=args.save_video, final_test=True, use_pb=True)
+            test_score, test_success_rate, _, test_path = test(game_config, model, 0, args.test_episodes, device=device, render=args.render, save_video=args.save_video, final_test=True, use_pb=True)
             mean_score = test_score.mean()
             std_score = test_score.std()
+            success_rate = test_success_rate.mean()
             logging.getLogger('test').info('Test Mean Score: {} (max: {}, min: {})'.format(mean_score, test_score.max(), test_score.min()))
             logging.getLogger('test').info('Test Std Score: {}'.format(std_score))
+            logging.getLogger('test').info('Test Success Rate: {}'.format(success_rate))
             if args.save_video:
                 logging.getLogger('test').info('Saving video in path: {}'.format(test_path))
         else:

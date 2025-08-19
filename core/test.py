@@ -28,9 +28,10 @@ def _test(config, shared_storage):
             test_model.set_weights(ray.get(shared_storage.get_weights.remote()))
             test_model.eval()
 
-            test_score, eval_steps, _ = test(config, test_model, counter, config.test_episodes, config.device, False, save_video=False)
+            test_score, test_success_rate, eval_steps, _ = test(config, test_model, counter, config.test_episodes, config.device, False, save_video=True)
             mean_score = test_score.mean()
             std_score = test_score.std()
+            success_rate = test_success_rate.mean()
             print('Start evaluation at step {}.'.format(counter))
             if mean_score >= best_test_score:
                 best_test_score = mean_score
@@ -41,6 +42,7 @@ def _test(config, shared_storage):
                 'std_score': std_score,
                 'max_score': test_score.max(),
                 'min_score': test_score.min(),
+                'success_rate': success_rate,
             }
 
             shared_storage.add_test_log.remote(counter, test_log)
@@ -91,6 +93,7 @@ def test(config, model, counter, test_episodes, device, render, save_video=False
         step = 0
         ep_ori_rewards = np.zeros(test_episodes)
         ep_clip_rewards = np.zeros(test_episodes)
+        ep_ori_sr = np.full(test_episodes, False)
         # loop
         while not dones.all():
             if render:
@@ -134,6 +137,8 @@ def test(config, model, counter, test_episodes, device, render, save_video=False
                 dones[i] = done
                 ep_ori_rewards[i] += ori_reward
                 ep_clip_rewards[i] += clip_reward
+                if info['is_success'] and dones[i]:
+                    ep_ori_sr[i] = True
 
             step += 1
             if use_pb:
@@ -145,4 +150,4 @@ def test(config, model, counter, test_episodes, device, render, save_video=False
         for env in envs:
             env.close()
 
-    return ep_ori_rewards, step, save_path
+    return ep_ori_rewards, ep_ori_sr, step, save_path

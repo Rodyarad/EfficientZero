@@ -199,7 +199,10 @@ class Shapes2d(gym.Env):
         return result
 
     def render(self, mode=None):
-        return self._get_observation()[0]
+        import cv2
+        img = self._get_observation()
+        img_resized = cv2.resize(img, (512, 512), interpolation=cv2.INTER_CUBIC)
+        return img_resized
 
     def _get_coordinates_info(self):
         # object coordinates normalized to (-1, 1)

@@ -144,8 +144,10 @@ def test(config, model, counter, test_episodes, device, render, save_video=False
                 dones[i] = done
                 ep_ori_rewards[i] += ori_reward
                 ep_clip_rewards[i] += clip_reward
-                if info['is_success'] and dones[i]:
-                    ep_ori_sr[i] = True
+
+                if config.case == 'shapes2d_test' or config.case == 'shapes2d':
+                    if info['is_success'] and dones[i]:
+                        ep_ori_sr[i] = True
 
             step += 1
             if use_pb:

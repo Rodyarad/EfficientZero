@@ -48,7 +48,7 @@ class BaseConfig(object):
                  total_transitions: int = 100 * 1000,
                  transition_num: float = 25,
                  do_consistency: bool = True,
-                 use_value_prefix: bool = True,
+                 use_value_prefix: bool = False,
                  off_correction: bool = True,
                  gray_scale: bool = False,
                  episode_life: bool = False,

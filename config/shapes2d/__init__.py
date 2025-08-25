@@ -65,7 +65,8 @@ class Shapes2dConfig(BaseConfig):
             proj_out=1024,
             pred_hid=512,
             pred_out=1024,
-            debug=False
+            debug=False,
+            use_value_prefix=False,
         )
 
         self.start_transitions = self.start_transitions * 1000
@@ -128,6 +129,7 @@ class Shapes2dConfig(BaseConfig):
             self.inverse_value_transform,
             self.inverse_reward_transform,
             self.lstm_hidden_size,
+            self.use_value_prefix,
             bn_mt=self.bn_mt,
             proj_hid=self.proj_hid,
             proj_out=self.proj_out,
@@ -224,7 +226,8 @@ class Shapes2dTestConfig(BaseConfig):
             proj_out=1024,
             pred_hid=512,
             pred_out=1024,
-            debug=True
+            debug=True,
+            use_value_prefix = False,
         )
 
         self.start_transitions = self.start_transitions * 1000
@@ -287,6 +290,7 @@ class Shapes2dTestConfig(BaseConfig):
             self.inverse_value_transform,
             self.inverse_reward_transform,
             self.lstm_hidden_size,
+            self.use_value_prefix,
             bn_mt=self.bn_mt,
             proj_hid=self.proj_hid,
             proj_out=self.proj_out,

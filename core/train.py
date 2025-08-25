@@ -116,7 +116,11 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
             value, _, policy_logits, hidden_state, reward_hidden = model.initial_inference(obs_batch)
     else:
         value, _, policy_logits, hidden_state, reward_hidden = model.initial_inference(obs_batch)
+
     scaled_value = config.inverse_value_transform(value)
+
+    if not config.use_value_prefix:
+        reward_hidden = None
 
     if vis_result:
         state_lst = hidden_state.detach().cpu().numpy()
@@ -168,9 +172,12 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
                 hidden_state.register_hook(lambda grad: grad * 0.5)
 
                 # reset hidden states
-                if (step_i + 1) % config.lstm_horizon_len == 0:
-                    reward_hidden = (torch.zeros(1, config.batch_size, config.lstm_hidden_size).to(config.device),
-                                     torch.zeros(1, config.batch_size, config.lstm_hidden_size).to(config.device))
+                if config.use_value_prefix:
+                    if (step_i + 1) % config.lstm_horizon_len == 0:
+                        reward_hidden = (torch.zeros(1, config.batch_size, config.lstm_hidden_size).to(config.device),
+                                         torch.zeros(1, config.batch_size, config.lstm_hidden_size).to(config.device))
+                else:
+                    reward_hidden = None
 
                 if vis_result:
                     scaled_value_prefixs = config.inverse_reward_transform(value_prefix.detach())
@@ -223,9 +230,12 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
             hidden_state.register_hook(lambda grad: grad * 0.5)
 
             # reset hidden states
-            if (step_i + 1) % config.lstm_horizon_len == 0:
-                reward_hidden = (torch.zeros(1, config.batch_size, config.lstm_hidden_size).to(config.device),
-                                 torch.zeros(1, config.batch_size, config.lstm_hidden_size).to(config.device))
+            if config.use_value_prefix:
+                if (step_i + 1) % config.lstm_horizon_len == 0:
+                    reward_hidden = (torch.zeros(1, config.batch_size, config.lstm_hidden_size).to(config.device),
+                                     torch.zeros(1, config.batch_size, config.lstm_hidden_size).to(config.device))
+            else:
+                reward_hidden = None
 
             if vis_result:
                 scaled_value_prefixs = config.inverse_reward_transform(value_prefix.detach())

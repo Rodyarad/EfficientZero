@@ -32,8 +32,9 @@ class MCTS(object):
             hidden_state_pool = [hidden_state_roots]
             # 1 x batch x 64
             # the data storage of value prefix hidden states in LSTM
-            reward_hidden_c_pool = [reward_hidden_roots[0]]
-            reward_hidden_h_pool = [reward_hidden_roots[1]]
+            if self.config.use_value_prefix:
+                reward_hidden_c_pool = [reward_hidden_roots[0]]
+                reward_hidden_h_pool = [reward_hidden_roots[1]]
             # the index of each layer in the tree
             hidden_state_index_x = 0
             # minimax value storage
@@ -43,8 +44,9 @@ class MCTS(object):
 
             for index_simulation in range(self.config.num_simulations):
                 hidden_states = []
-                hidden_states_c_reward = []
-                hidden_states_h_reward = []
+                if self.config.use_value_prefix:
+                    hidden_states_c_reward = []
+                    hidden_states_h_reward = []
 
                 # prepare a result wrapper to transport results between python and c++ parts
                 results = tree.ResultsWrapper(num)
@@ -59,41 +61,55 @@ class MCTS(object):
                 # obtain the states for leaf nodes
                 for ix, iy in zip(hidden_state_index_x_lst, hidden_state_index_y_lst):
                     hidden_states.append(hidden_state_pool[ix][iy])
-                    hidden_states_c_reward.append(reward_hidden_c_pool[ix][0][iy])
-                    hidden_states_h_reward.append(reward_hidden_h_pool[ix][0][iy])
+                    if self.config.use_value_prefix:
+                        hidden_states_c_reward.append(reward_hidden_c_pool[ix][0][iy])
+                        hidden_states_h_reward.append(reward_hidden_h_pool[ix][0][iy])
 
                 hidden_states = torch.from_numpy(np.asarray(hidden_states)).to(device).float()
-                hidden_states_c_reward = torch.from_numpy(np.asarray(hidden_states_c_reward)).to(device).unsqueeze(0)
-                hidden_states_h_reward = torch.from_numpy(np.asarray(hidden_states_h_reward)).to(device).unsqueeze(0)
+                if self.config.use_value_prefix:
+                    hidden_states_c_reward = torch.from_numpy(np.asarray(hidden_states_c_reward)).to(device).unsqueeze(0)
+                    hidden_states_h_reward = torch.from_numpy(np.asarray(hidden_states_h_reward)).to(device).unsqueeze(0)
 
                 last_actions = torch.from_numpy(np.asarray(last_actions)).to(device).unsqueeze(1).long()
 
                 # evaluation for leaf nodes
-                if self.config.amp_type == 'torch_amp':
-                    with autocast():
+                if self.config.use_value_prefix:
+                    if self.config.amp_type == 'torch_amp':
+                        with autocast():
+                            network_output = model.recurrent_inference(hidden_states, (hidden_states_c_reward, hidden_states_h_reward), last_actions)
+                    else:
                         network_output = model.recurrent_inference(hidden_states, (hidden_states_c_reward, hidden_states_h_reward), last_actions)
                 else:
-                    network_output = model.recurrent_inference(hidden_states, (hidden_states_c_reward, hidden_states_h_reward), last_actions)
+                    if self.config.amp_type == 'torch_amp':
+                        with autocast():
+                            network_output = model.recurrent_inference(hidden_states, None, last_actions)
+                    else:
+                        network_output = model.recurrent_inference(hidden_states, None, last_actions)
 
                 hidden_state_nodes = network_output.hidden_state
                 value_prefix_pool = network_output.value_prefix.reshape(-1).tolist()
                 value_pool = network_output.value.reshape(-1).tolist()
                 policy_logits_pool = network_output.policy_logits.tolist()
-                reward_hidden_nodes = network_output.reward_hidden
-
+                if self.config.use_value_prefix:
+                    reward_hidden_nodes = network_output.reward_hidden
                 hidden_state_pool.append(hidden_state_nodes)
                 # reset 0
                 # reset the hidden states in LSTM every horizon steps in search
                 # only need to predict the value prefix in a range (eg: s0 -> s5)
-                assert horizons > 0
-                reset_idx = (np.array(search_lens) % horizons == 0)
-                assert len(reset_idx) == num
-                reward_hidden_nodes[0][:, reset_idx, :] = 0
-                reward_hidden_nodes[1][:, reset_idx, :] = 0
+
+                if self.config.use_value_prefix:
+                    assert horizons > 0
+                    reset_idx = (np.array(search_lens) % horizons == 0)
+                    assert len(reset_idx) == num
+                    reward_hidden_nodes[0][:, reset_idx, :] = 0
+                    reward_hidden_nodes[1][:, reset_idx, :] = 0
+                else:
+                    reset_idx = np.asarray([1. for _ in range(self.config.batch_size)])
                 is_reset_lst = reset_idx.astype(np.int32).tolist()
 
-                reward_hidden_c_pool.append(reward_hidden_nodes[0])
-                reward_hidden_h_pool.append(reward_hidden_nodes[1])
+                if self.config.use_value_prefix:
+                    reward_hidden_c_pool.append(reward_hidden_nodes[0])
+                    reward_hidden_h_pool.append(reward_hidden_nodes[1])
                 hidden_state_index_x += 1
 
                 # backpropagation along the search path to update the attributes

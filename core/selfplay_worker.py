@@ -274,7 +274,11 @@ class DataWorker(object):
                     else:
                         network_output = model.initial_inference(stack_obs.float())
                     hidden_state_roots = network_output.hidden_state
-                    reward_hidden_roots = network_output.reward_hidden
+
+                    if self.config.use_value_prefix:
+                        reward_hidden_roots = network_output.reward_hidden
+                    else:
+                        reward_hidden_roots = None
                     value_prefix_pool = network_output.value_prefix
                     policy_logits_pool = network_output.policy_logits.tolist()
 

@@ -331,6 +331,8 @@ class BatchWorker_GPU(object):
                 roots = cytree.Roots(batch_size, self.config.action_space_size, self.config.num_simulations)
                 noises = [np.random.dirichlet([self.config.root_dirichlet_alpha] * self.config.action_space_size).astype(np.float32).tolist() for _ in range(batch_size)]
                 roots.prepare(self.config.root_exploration_fraction, noises, value_prefix_pool, policy_logits_pool)
+                if not self.config.use_value_prefix:
+                    reward_hidden_roots = None
                 MCTS(self.config).search(roots, self.model, hidden_state_roots, reward_hidden_roots)
 
                 roots_values = roots.get_values()
@@ -421,6 +423,8 @@ class BatchWorker_GPU(object):
             noises = [np.random.dirichlet([self.config.root_dirichlet_alpha] * self.config.action_space_size).astype(np.float32).tolist() for _ in range(batch_size)]
             roots.prepare(self.config.root_exploration_fraction, noises, value_prefix_pool, policy_logits_pool)
             # do MCTS for a new policy with the recent target model
+            if not self.config.use_value_prefix:
+                reward_hidden_roots = None
             MCTS(self.config).search(roots, self.model, hidden_state_roots, reward_hidden_roots)
 
             roots_distributions = roots.get_distributions()

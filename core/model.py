@@ -107,7 +107,8 @@ class BaseNet(nn.Module):
             value = self.inverse_value_transform(value).detach().cpu().numpy()
             value_prefix = self.inverse_reward_transform(value_prefix).detach().cpu().numpy()
             state = state.detach().cpu().numpy()
-            reward_hidden = (reward_hidden[0].detach().cpu().numpy(), reward_hidden[1].detach().cpu().numpy())
+            if reward_hidden is not None:
+                reward_hidden = (reward_hidden[0].detach().cpu().numpy(), reward_hidden[1].detach().cpu().numpy())
             actor_logit = actor_logit.detach().cpu().numpy()
 
         return NetworkOutput(value, value_prefix, actor_logit, state, reward_hidden)

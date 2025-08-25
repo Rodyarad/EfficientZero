@@ -335,8 +335,8 @@ class DynamicsNetworkNoPrefix(nn.Module):
         self.conv1x1_reward = nn.Conv2d(num_channels - 1, reduced_channels_reward, 1)
         self.bn_reward = nn.BatchNorm2d(reduced_channels_reward, momentum=momentum)
         self.block_output_size_reward = block_output_size_reward
-        self.bn_value_prefix = nn.BatchNorm1d(self.lstm_hidden_size, momentum=momentum)
-        self.fc = mlp(self.lstm_hidden_size, fc_reward_layers, full_support_size, init_zero=init_zero, momentum=momentum)
+        self.bn_value_prefix = nn.BatchNorm1d(block_output_size_reward, momentum=momentum)
+        self.fc = mlp(block_output_size_reward, fc_reward_layers, full_support_size, init_zero=init_zero, momentum=momentum)
 
     def forward(self, x, reward_hidden=None):
         state = x[:,:-1,:,:]

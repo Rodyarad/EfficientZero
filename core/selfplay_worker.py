@@ -287,7 +287,6 @@ class DataWorker(object):
                     roots.prepare(self.config.root_exploration_fraction, noises, value_prefix_pool, policy_logits_pool)
                     # do MCTS for a policy
                     MCTS(self.config).search(roots, model, hidden_state_roots, reward_hidden_roots)
-
                     roots_distributions = roots.get_distributions()
                     roots_values = roots.get_values()
                     for i in range(env_nums):

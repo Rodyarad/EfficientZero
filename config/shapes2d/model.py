@@ -534,7 +534,7 @@ class EfficientZeroNet(BaseNet):
         state_norm: bool
             True -> normalization for hidden states
         """
-        super(EfficientZeroNet, self).__init__(inverse_value_transform, inverse_reward_transform, lstm_hidden_size, use_value_prefix)
+        super(EfficientZeroNet, self).__init__(inverse_value_transform, inverse_reward_transform, lstm_hidden_size)
         self.proj_hid = proj_hid
         self.proj_out = proj_out
         self.pred_hid = pred_hid

@@ -362,7 +362,7 @@ class BatchWorker_GPU(object):
                         value_lst[value_index] += reward * self.config.discount ** i
 
                     # reset every lstm_horizon_len
-                    if horizon_id % self.config.lstm_horizon_len == 0:
+                    if horizon_id % self.config.lstm_horizon_len == 0 and self.config.use_value_prefix:
                         value_prefix = 0.0
                         base_index = current_index
                     horizon_id += 1
@@ -371,7 +371,10 @@ class BatchWorker_GPU(object):
                         target_values.append(value_lst[value_index])
                         # Since the horizon is small and the discount is close to 1.
                         # Compute the reward sum to approximate the value prefix for simplification
-                        value_prefix += reward_lst[current_index]  # * config.discount ** (current_index - base_index)
+                        if self.config.use_value_prefix:
+                            value_prefix += reward_lst[current_index]  # * config.discount ** (current_index - base_index)
+                        else:
+                            value_prefix = reward_lst[current_index]
                         target_value_prefixs.append(value_prefix)
                     else:
                         target_values.append(0)

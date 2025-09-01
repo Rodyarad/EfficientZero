@@ -6,5 +6,6 @@ python main.py --env BreakoutNoFrameskip-v4 --case atari --opr test --seed 0 --n
   --test_episodes 32 \
   --load_model \
   --amp_type 'torch_amp' \
+  --save_video \
   --model_path 'model.p' \
   --info 'Test'

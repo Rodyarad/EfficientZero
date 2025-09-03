@@ -12,6 +12,9 @@ wandb==0.14.2
 matplotlib==3.3.4
 scikit-image==0.18.3
 pywavelets<=1.4.1
+torchvision==0.15.2
+scikit-learn==1.3.0
 tdqm
 ipdb
 comet_ml
+omegaconf

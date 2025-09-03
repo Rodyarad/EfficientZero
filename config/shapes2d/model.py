@@ -3,9 +3,19 @@ import torch
 
 import numpy as np
 import torch.nn as nn
+import torchrl
 
 from core.model import BaseNet, renormalize
 
+
+class PNorm(nn.Module):
+    def __init__(self, eps=1e-10):
+        super().__init__()
+        self.eps = eps
+
+    def forward(self, x):
+        assert len(x.shape) == 2
+        return nn.functional.normalize(x, dim=1, eps=self.eps)
 
 def mlp(
     input_size,
@@ -13,8 +23,10 @@ def mlp(
     output_size,
     output_activation=nn.Identity,
     activation=nn.ReLU,
-    momentum=0.1,
     init_zero=False,
+    use_bn=True,
+    p_norm=False,
+    noisy=False
 ):
     """MLP layers
     Parameters
@@ -34,25 +46,31 @@ def mlp(
     for i in range(len(sizes) - 1):
         if i < len(sizes) - 2:
             act = activation
-            layers += [nn.Linear(sizes[i], sizes[i + 1]),
-                       nn.BatchNorm1d(sizes[i + 1], momentum=momentum),
-                       act()]
+            if use_bn:
+                layers += [
+                    torchrl.modules.NoisyLinear(sizes[i], sizes[i + 1], std_init=0.5) if noisy else nn.Linear(sizes[i], sizes[i + 1]),
+                    nn.BatchNorm1d(sizes[i + 1]),
+                    act()
+                ]
+            else:
+                layers += [torchrl.modules.NoisyLinear(sizes[i], sizes[i + 1], std_init=0.5) if noisy else nn.Linear(sizes[i], sizes[i + 1]),
+                           act()]
         else:
+            if p_norm == True:
+                layers += [PNorm()]
             act = output_activation
-            layers += [nn.Linear(sizes[i], sizes[i + 1]),
+            layers += [torchrl.modules.NoisyLinear(sizes[i], sizes[i + 1], std_init=0.5) if noisy else nn.Linear(sizes[i], sizes[i + 1]),
                        act()]
 
     if init_zero:
-        layers[-2].weight.data.fill_(0)
-        layers[-2].bias.data.fill_(0)
+        if noisy:
+            layers[-2].reset_parameters()
+        else:
+            layers[-2].weight.data.fill_(0)
+            layers[-2].bias.data.fill_(0)
+
 
     return nn.Sequential(*layers)
-
-
-def conv3x3(in_channels, out_channels, stride=1):
-    return nn.Conv2d(
-        in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False
-    )
 
 
 # Residual block

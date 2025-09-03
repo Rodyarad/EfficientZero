@@ -10,5 +10,8 @@ wandb==0.14.2
 matplotlib==3.3.4
 scikit-image==0.18.3
 pywavelets<=1.4.1
+torchrl==0.1.0
+tensordict==0.2.0
 tdqm
 ipdb
+comet_ml

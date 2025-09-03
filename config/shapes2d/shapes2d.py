@@ -212,7 +212,7 @@ class Shapes2d(gym.Env):
         # object coordinates normalized to (-1, 1)
         coordinates = (self.box_pos + 0.5) / self.w * 2 - 1
         coordinates[self.box_pos[:, 0] < 0] = 1e+8
-
+        coordinates = coordinates.flatten()
         return coordinates
 
     def reset(self, seed=None, options=None):
@@ -405,7 +405,7 @@ class Shapes2d(gym.Env):
         else:
             observation = None
 
-        return observation, reward, terminated and truncated, info
+        return observation, reward, terminated or truncated, info
 
     def _get_all_moving_boxes(self):
         moving_boxes = []

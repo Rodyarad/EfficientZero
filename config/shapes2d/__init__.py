@@ -35,7 +35,7 @@ class Shapes2dConfig(BaseConfig):
             # network initialization/ & normalization
             episode_life=True,
             init_zero=True,
-            clip_reward=True,
+            clip_reward=False,
             # storage efficient
             cvt_string=True,
             image_based=True,
@@ -194,7 +194,7 @@ class Shapes2dTestConfig(BaseConfig):
             # network initialization/ & normalization
             episode_life=True,
             init_zero=True,
-            clip_reward=True,
+            clip_reward=False,
             # storage efficient
             cvt_string=True,
             image_based=True,

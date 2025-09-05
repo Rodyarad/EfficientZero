@@ -79,8 +79,8 @@ class Shapes2dConfig(BaseConfig):
         self.run_id = ""
         self.resume_path = ""
 
-        self.ocr_config_path = 'ez/ocr/slate/config/navigation5x5.yaml'
-        self.checkpoint_path = 'ez/ocr/slate_weights/navigation5х5.pth'
+        self.ocr_config_path = 'config/shapes2d/ocr/slate/config/navigation5x5.yaml'
+        self.checkpoint_path = 'config/shapes2d/ocr/slate_weights/navigation5х5.pth'
         self.num_slots = 6
         self.slot_dim = 64
         self.latent_dim = 512

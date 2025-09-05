@@ -66,14 +66,10 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
     # obs_batch is the observation for hat s_t (predicted hidden states from dynamics function)
     # obs_target_batch is the observations for s_t (hidden states from representation function)
     # to save GPU memory usage, obs_batch_ori contains (stack + unroll steps) frames
-    obs_batch_ori = torch.from_numpy(obs_batch_ori).to(config.device).float() / 255.0
-    obs_batch = obs_batch_ori[:, 0: config.stacked_observations * config.image_channel, :, :]
-    obs_target_batch = obs_batch_ori[:, config.image_channel:, :, :]
+    obs_batch_ori = torch.from_numpy(obs_batch_ori).to(config.device).float()
+    obs_batch = obs_batch_ori[:, 0: config.stacked_observations, :, :].squeeze(1)
+    obs_target_batch = obs_batch_ori[:, 1:, :, :]
 
-    # do augmentations
-    if config.use_augmentation:
-        obs_batch = config.transform(obs_batch)
-        obs_target_batch = config.transform(obs_target_batch)
 
     # use GPU tensor
     action_batch = torch.from_numpy(action_batch).to(config.device).unsqueeze(-1).long()
@@ -146,8 +142,8 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
                 # unroll with the dynamics function
                 value, value_prefix, policy_logits, hidden_state, reward_hidden = model.recurrent_inference(hidden_state, reward_hidden, action_batch[:, step_i])
 
-                beg_index = config.image_channel * step_i
-                end_index = config.image_channel * (step_i + config.stacked_observations)
+                beg_index = step_i
+                end_index = step_i + config.stacked_observations
 
                 # consistency loss
                 if config.consistency_coeff > 0:
@@ -361,10 +357,6 @@ def _train(model, target_model, replay_buffer, shared_storage, batch_storage, co
     model.train()
     target_model.eval()
     # ----------------------------------------------------------------------------------
-    # set augmentation tools
-    if config.use_augmentation:
-        config.set_transforms()
-
     # wait until collecting enough data to start
     while not (ray.get(replay_buffer.get_total_len.remote()) >= config.start_transitions):
         time.sleep(1)

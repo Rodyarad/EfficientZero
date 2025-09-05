@@ -2,6 +2,7 @@ import os
 import cv2
 import gym
 import torch
+from torch import nn
 import random
 import shutil
 import logging
@@ -304,18 +305,26 @@ def select_action(visit_counts, temperature=1, deterministic=True):
     return action_pos, count_entropy
 
 
-def prepare_observation_lst(observation_lst):
-    """Prepare the observations to satisfy the input fomat of torch
-    [B, S, W, H, C] -> [B, S x C, W, H]
-    batch, stack num, width, height, channel
-    """
-    # B, S, W, H, C
-    observation_lst = np.array(observation_lst, dtype=np.uint8)
-    observation_lst = np.moveaxis(observation_lst, -1, 2)
+def prepare_observation_lst(observation_lst, imaged_based, coord_based, device):
+    if imaged_based:
+        """Prepare the observations to satisfy the input fomat of torch
+        [B, S, W, H, C] -> [B, S x C, W, H]
+        batch, stack num, width, height, channel
+        """
+        # B, S, W, H, C
+        observation_lst = np.array(observation_lst, dtype=np.uint8)
+        observation_lst = np.moveaxis(observation_lst, -1, 2)
 
-    shape = observation_lst.shape
-    observation_lst = observation_lst.reshape((shape[0], -1, shape[-2], shape[-1]))
-
+        shape = observation_lst.shape
+        observation_lst = observation_lst.reshape((shape[0], -1, shape[-2], shape[-1]))
+        observation_lst = torch.from_numpy(observation_lst).to(device).float() / 255.0
+    elif coord_based:
+        observation_lst = torch.from_numpy(np.array(observation_lst)).to(device)
+        observation_lst = observation_lst.squeeze(1)
+    else:
+        observation_lst = torch.from_numpy(observation_lst).to(device).float()
+        shape = observation_lst.shape
+        observation_lst = observation_lst.reshape((shape[0], -1))
     return observation_lst
 
 

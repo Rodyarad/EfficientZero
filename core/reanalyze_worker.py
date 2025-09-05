@@ -197,7 +197,8 @@ class BatchWorker_CPU(object):
 
         re_num = int(batch_size * ratio)
         # formalize the input observations
-        obs_lst = prepare_observation_lst(obs_lst)
+        obs_lst = prepare_observation_lst(obs_lst, self.config.image_based,
+                                          self.config.coord_based, 'cpu')
 
         # formalize the inputs of a batch
         inputs_batch = [obs_lst, action_lst, mask_lst, indices_lst, weights_lst, make_time_lst]
@@ -305,7 +306,6 @@ class BatchWorker_GPU(object):
 
         batch_values, batch_value_prefixs = [], []
         with torch.no_grad():
-            value_obs_lst = prepare_observation_lst(value_obs_lst)
             # split a full batch into slices of mini_infer_size: to save the GPU memory for more GPU actors
             m_batch = self.config.mini_infer_size
             slices = np.ceil(batch_size / m_batch).astype(np.int_)
@@ -313,7 +313,9 @@ class BatchWorker_GPU(object):
             for i in range(slices):
                 beg_index = m_batch * i
                 end_index = m_batch * (i + 1)
-                m_obs = torch.from_numpy(value_obs_lst[beg_index:end_index]).to(device).float() / 255.0
+                m_obs = value_obs_lst[beg_index:end_index]
+                m_obs = prepare_observation_lst(m_obs, self.config.image_based,
+                                                self.config.coord_based, device)
                 if self.config.amp_type == 'torch_amp':
                     with autocast():
                         m_output = self.model.initial_inference(m_obs)
@@ -338,7 +340,8 @@ class BatchWorker_GPU(object):
             else:
                 # use the predicted values
                 value_lst = concat_output_value(network_output)
-
+            import ipdb
+            ipdb.set_trace()
             # get last state value
             value_lst = value_lst.reshape(-1) * (np.array([self.config.discount for _ in range(batch_size)]) ** td_steps_lst)
             value_lst = value_lst * np.array(value_mask)
@@ -396,7 +399,6 @@ class BatchWorker_GPU(object):
         device = self.config.device
 
         with torch.no_grad():
-            policy_obs_lst = prepare_observation_lst(policy_obs_lst)
             # split a full batch into slices of mini_infer_size: to save the GPU memory for more GPU actors
             m_batch = self.config.mini_infer_size
             slices = np.ceil(batch_size / m_batch).astype(np.int_)
@@ -405,7 +407,9 @@ class BatchWorker_GPU(object):
                 beg_index = m_batch * i
                 end_index = m_batch * (i + 1)
 
-                m_obs = torch.from_numpy(policy_obs_lst[beg_index:end_index]).to(device).float() / 255.0
+                m_obs = policy_obs_lst[beg_index:end_index]
+                m_obs = prepare_observation_lst(m_obs, self.config.image_based,
+                                                self.config.coord_based, device)
                 if self.config.amp_type == 'torch_amp':
                     with autocast():
                         m_output = self.model.initial_inference(m_obs)
@@ -475,6 +479,7 @@ class BatchWorker_GPU(object):
         return batch_policies_non_re
 
     def _prepare_target_gpu(self):
+
         input_countext = self.mcts_storage.pop()
         if input_countext is None:
             time.sleep(1)

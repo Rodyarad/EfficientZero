@@ -220,8 +220,8 @@ class DynamicsNetwork(nn.Module):
         super().__init__()
         self.hidden_shape = hidden_shape
 
-        self.dyn_ln_1 = nn.LayerNorm(hidden_shape + action_shape)
-        self.dyn_net_1 = nn.Linear(hidden_shape + action_shape, dyn_shape)
+        self.dyn_ln_1 = nn.LayerNorm(hidden_shape + 1)
+        self.dyn_net_1 = nn.Linear(hidden_shape + 1, dyn_shape)
 
         self.dyn_ln_2 = nn.LayerNorm(dyn_shape)
         self.dyn_net_2 = nn.Linear(dyn_shape, hidden_shape)
@@ -243,21 +243,15 @@ class DynamicsNetwork(nn.Module):
                            use_bn=use_bn)
 
 
-    def forward(self, hidden, action, reward_hidden=None):
-
-        # action embedding
-        act_emb = self.act_linear1(action)
-        act_emb = self.act_ln1(act_emb)
-        act_emb = nn.functional.relu(act_emb)
-        # act_emb = nn.functional.tanh(act_emb)
-
+    def forward(self, hidden, reward_hidden=None):
         # imporved res block 1st
-        x = self.dyn_ln_1(torch.cat((hidden, act_emb), dim=-1))
+        state_no_act = hidden[:, :-1]
+        x = self.dyn_ln_1(hidden)
         x = self.dyn_net_1(x)
         x = nn.functional.relu(x)
         x = self.dyn_net_2(x)
 
-        state = hidden + x
+        state = state_no_act + x
 
         # residual tower for dynamic model (2nd -> num blocks)
         for block in self.dyn_resblocks:
@@ -266,12 +260,12 @@ class DynamicsNetwork(nn.Module):
         next_state = self.rew_resblock(state)
         next_state = self.ln(next_state)
         next_state = next_state.unsqueeze(0)
-        reward, hidden = self.lstm(next_state, hidden)
+        reward, reward_hidden = self.lstm(next_state, reward_hidden)
         reward = reward.squeeze(0)
         reward = self.rew_net(reward)
 
 
-        return state, reward
+        return state, reward_hidden, reward
 
     def get_dynamic_mean(self):
         dynamic_mean = np.abs(self.conv.weight.detach().cpu().numpy().reshape(-1)).tolist()
@@ -349,8 +343,7 @@ class PredictionNetwork(nn.Module):
         value = self.val_resblock(x)
         value = self.val_ln(value)
         values = []
-        for val_net in self.val_nets:
-            values.append(val_net(value))
+        values.append(self.val_net(value))
         values = torch.stack(values)
 
         policy = self.pi_resblock(x)
@@ -394,7 +387,8 @@ class EfficientZeroNet(BaseNet):
         pred_hid=64,
         pred_out=256,
         init_zero=False,
-        state_norm=False
+        state_norm=False,
+        policy_distribution = "squashed_gaussian"
     ):
         """EfficientZero network
         Parameters
@@ -484,7 +478,7 @@ class EfficientZeroNet(BaseNet):
             init_zero=self.init_zero,
             use_bn=use_bn,
             p_norm=use_p_norm,
-            policy_distr=self.config.model.policy_distribution,
+            policy_distr=policy_distribution,
             noisy=noisy_net
         )
 

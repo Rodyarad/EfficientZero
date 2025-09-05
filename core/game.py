@@ -50,7 +50,7 @@ class GameHistory:
         self.stacked_observations = config.stacked_observations
         self.discount = config.discount
         self.action_space_size = config.action_space_size
-        self.zero_obs_shape = (config.obs_shape[-2], config.obs_shape[-1], config.image_channel)
+        self.zero_obs_shape = config.obs_shape
 
         self.child_visits = []
         self.root_values = []
@@ -152,7 +152,7 @@ class GameHistory:
 
     def zero_obs(self):
         # return a zero frame
-        return [np.zeros(self.zero_obs_shape, dtype=np.uint8) for _ in range(self.stacked_observations)]
+        return [np.zeros(self.zero_obs_shape, dtype=np.float32) for _ in range(self.stacked_observations)]
 
     def step_obs(self):
         # return an observation of correct format for model inference

@@ -37,8 +37,8 @@ class Shapes2dConfig(BaseConfig):
             init_zero=True,
             clip_reward=False,
             # storage efficient
-            cvt_string=True,
-            image_based=True,
+            cvt_string=False,
+            image_based=False,
             # lr scheduler
             lr_warm_up=0.01,
             lr_init=0.2,
@@ -84,6 +84,8 @@ class Shapes2dConfig(BaseConfig):
         self.run_id = ""
         self.resume_path = ""
 
+        self.coord_based = True
+
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):
         if self.change_temperature:
@@ -152,12 +154,6 @@ class Shapes2dConfig(BaseConfig):
     def scalar_value_loss(self, prediction, target):
         return -(torch.log_softmax(prediction, dim=1) * target).sum(1)
 
-    def set_transforms(self):
-        if self.use_augmentation:
-            self.transforms = Transforms(self.augmentation, image_shape=(self.obs_shape[1], self.obs_shape[2]))
-
-    def transform(self, images):
-        return self.transforms.transform(images)
 
 
 class Shapes2dTestConfig(BaseConfig):
@@ -187,8 +183,8 @@ class Shapes2dTestConfig(BaseConfig):
             init_zero=True,
             clip_reward=False,
             # storage efficient
-            cvt_string=True,
-            image_based=True,
+            cvt_string=False,
+            image_based=False,
             # lr scheduler
             lr_warm_up=0.01,
             lr_init=0.2,
@@ -234,6 +230,8 @@ class Shapes2dTestConfig(BaseConfig):
         self.run_id = ""
         self.resume_path = ""
 
+        self.coord_based = True
+
 
     def visit_softmax_temperature_fn(self, num_moves, trained_steps):
         if self.change_temperature:
@@ -248,7 +246,7 @@ class Shapes2dTestConfig(BaseConfig):
 
     def set_game(self, env_name, save_video=False, save_path=None, video_callable=None):
         self.env_name = env_name
-        self.obs_shape = (10 * self.stacked_observations,)
+        self.obs_shape = 10 * self.stacked_observations
 
         game = self.new_game()
         self.action_space_size = game.action_space_size
@@ -301,13 +299,6 @@ class Shapes2dTestConfig(BaseConfig):
 
     def scalar_value_loss(self, prediction, target):
         return -(torch.log_softmax(prediction, dim=1) * target).sum(1)
-
-    def set_transforms(self):
-        if self.use_augmentation:
-            self.transforms = Transforms(self.augmentation, image_shape=(self.obs_shape[1], self.obs_shape[2]))
-
-    def transform(self, images):
-        return self.transforms.transform(images)
 
 
 game_config = Shapes2dConfig()

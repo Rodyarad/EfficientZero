@@ -389,8 +389,6 @@ class BaseConfig(object):
 
         if not self.do_consistency:
             self.consistency_coeff = 0
-            self.augmentation = None
-            self.use_augmentation = False
 
         if not self.use_value_prefix:
             self.lstm_horizon_len = 1
@@ -404,12 +402,6 @@ class BaseConfig(object):
         assert 1 <= self.lstm_horizon_len <= self.num_unroll_steps
         assert self.start_transitions >= self.batch_size
 
-        # augmentation
-        if self.consistency_coeff > 0 and args.use_augmentation:
-            self.use_augmentation = True
-            self.augmentation = args.augmentation
-        else:
-            self.use_augmentation = False
 
         if args.revisit_policy_search_rate is not None:
             self.revisit_policy_search_rate = args.revisit_policy_search_rate

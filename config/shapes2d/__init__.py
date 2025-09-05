@@ -109,7 +109,6 @@ class Shapes2dConfig(BaseConfig):
 
     def get_uniform_network(self):
         return ObjectZero(
-            obs_shape = self.obs_shape,
             slot_dim=self.slot_dim,
             laten_dim=self.latent_dim,
             n_slots=self.num_slots,
@@ -132,7 +131,7 @@ class Shapes2dConfig(BaseConfig):
         env = gym.make(self.env_name)
 
         env = WarpFrame(env, width=self.obs_shape[1], height=self.obs_shape[2], grayscale=self.gray_scale)
-        env = TimeLimit(env, max_episode_steps=self.max_moves)
+        #env = TimeLimit(env, max_episode_steps=self.max_moves)
 
         if seed is not None:
             env.seed(seed)

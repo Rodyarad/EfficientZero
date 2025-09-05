@@ -70,19 +70,16 @@ class Shapes2dConfig(BaseConfig):
 
         self.start_transitions = self.start_transitions * 1000
         self.start_transitions = max(1, self.start_transitions)
-
-        self.bn_mt = 0.1
-        self.blocks = 1  # Number of blocks in the ResNet
-        self.channels = 64  # Number of channels in the ResNet
-        if self.gray_scale:
-            self.channels = 32
-        self.reduced_channels_reward = 16  # x36 Number of channels in reward head
-        self.reduced_channels_value = 16  # x36 Number of channels in value head
-        self.reduced_channels_policy = 16  # x36 Number of channels in policy head
-        self.resnet_fc_reward_layers = [32]  # Define the hidden layers in the reward head of the dynamic network
-        self.resnet_fc_value_layers = [32]  # Define the hidden layers in the value head of the prediction network
-        self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
-        self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
+        self.blocks = 2
+        self.hidden_shape = 128
+        self.rep_net_shape = 256
+        self.dyn_shape = 256
+        self.rew_net_shape = [256, 256]
+        self.val_net_shape = [256, 256]
+        self.pi_net_shape = [256, 256]
+        self.use_bn = True
+        self.use_p_norm = False
+        self.noisy_net = False
         self.name_project = "objectzero"
         self.run_id = ""
         self.resume_path = ""
@@ -101,11 +98,7 @@ class Shapes2dConfig(BaseConfig):
 
     def set_game(self, env_name, save_video=False, save_path=None, video_callable=None):
         self.env_name = env_name
-        # gray scale
-        if self.gray_scale:
-            self.image_channel = 1
-        obs_shape = (self.image_channel, 96, 96)
-        self.obs_shape = (obs_shape[0] * self.stacked_observations, obs_shape[1], obs_shape[2])
+        self.obs_shape = (10 * self.stacked_observations,)
 
         game = self.new_game()
         self.action_space_size = game.action_space_size
@@ -115,20 +108,20 @@ class Shapes2dConfig(BaseConfig):
             self.obs_shape,
             self.action_space_size,
             self.blocks,
-            self.channels,
-            self.reduced_channels_reward,
-            self.reduced_channels_value,
-            self.reduced_channels_policy,
-            self.resnet_fc_reward_layers,
-            self.resnet_fc_value_layers,
-            self.resnet_fc_policy_layers,
             self.reward_support.size,
             self.value_support.size,
-            self.downsample,
             self.inverse_value_transform,
             self.inverse_reward_transform,
             self.lstm_hidden_size,
-            bn_mt=self.bn_mt,
+            self.hidden_shape,
+            self.rep_net_shape,
+            self.dyn_shape,
+            self.rew_net_shape,
+            self.val_net_shape,
+            self.pi_net_shape,
+            self.use_p_norm,
+            self.use_bn,
+            self.noisy_net,
             proj_hid=self.proj_hid,
             proj_out=self.proj_out,
             pred_hid=self.pred_hid,
@@ -138,9 +131,7 @@ class Shapes2dConfig(BaseConfig):
 
     def new_game(self, seed=None, save_video=False, save_path=None, video_callable=None, uid=None, test=False, final_test=False):
         env = gym.make(self.env_name)
-
-        env = WarpFrame(env, width=self.obs_shape[1], height=self.obs_shape[2], grayscale=self.gray_scale)
-        env = TimeLimit(env, max_episode_steps=self.max_moves)
+        #env = TimeLimit(env, max_episode_steps=self.max_moves)
 
         if seed is not None:
             env.seed(seed)
@@ -229,19 +220,16 @@ class Shapes2dTestConfig(BaseConfig):
 
         self.start_transitions = self.start_transitions * 1000
         self.start_transitions = max(1, self.start_transitions)
-
-        self.bn_mt = 0.1
-        self.blocks = 1  # Number of blocks in the ResNet
-        self.channels = 64  # Number of channels in the ResNet
-        if self.gray_scale:
-            self.channels = 32
-        self.reduced_channels_reward = 16  # x36 Number of channels in reward head
-        self.reduced_channels_value = 16  # x36 Number of channels in value head
-        self.reduced_channels_policy = 16  # x36 Number of channels in policy head
-        self.resnet_fc_reward_layers = [32]  # Define the hidden layers in the reward head of the dynamic network
-        self.resnet_fc_value_layers = [32]  # Define the hidden layers in the value head of the prediction network
-        self.resnet_fc_policy_layers = [32]  # Define the hidden layers in the policy head of the prediction network
-        self.downsample = True  # Downsample observations before representation network (See paper appendix Network Architecture)
+        self.blocks = 2
+        self.hidden_shape = 128
+        self.rep_net_shape = 256
+        self.dyn_shape = 256
+        self.rew_net_shape = [256, 256]
+        self.val_net_shape = [256, 256]
+        self.pi_net_shape = [256, 256]
+        self.use_bn = True
+        self.use_p_norm = False
+        self.noisy_net = False
         self.name_project = "objectzero"
         self.run_id = ""
         self.resume_path = ""
@@ -260,11 +248,7 @@ class Shapes2dTestConfig(BaseConfig):
 
     def set_game(self, env_name, save_video=False, save_path=None, video_callable=None):
         self.env_name = env_name
-        # gray scale
-        if self.gray_scale:
-            self.image_channel = 1
-        obs_shape = (self.image_channel, 96, 96)
-        self.obs_shape = (obs_shape[0] * self.stacked_observations, obs_shape[1], obs_shape[2])
+        self.obs_shape = (10 * self.stacked_observations,)
 
         game = self.new_game()
         self.action_space_size = game.action_space_size
@@ -274,20 +258,20 @@ class Shapes2dTestConfig(BaseConfig):
             self.obs_shape,
             self.action_space_size,
             self.blocks,
-            self.channels,
-            self.reduced_channels_reward,
-            self.reduced_channels_value,
-            self.reduced_channels_policy,
-            self.resnet_fc_reward_layers,
-            self.resnet_fc_value_layers,
-            self.resnet_fc_policy_layers,
             self.reward_support.size,
             self.value_support.size,
-            self.downsample,
             self.inverse_value_transform,
             self.inverse_reward_transform,
             self.lstm_hidden_size,
-            bn_mt=self.bn_mt,
+            self.hidden_shape,
+            self.rep_net_shape,
+            self.dyn_shape,
+            self.rew_net_shape,
+            self.val_net_shape,
+            self.pi_net_shape,
+            self.use_p_norm,
+            self.use_bn,
+            self.noisy_net,
             proj_hid=self.proj_hid,
             proj_out=self.proj_out,
             pred_hid=self.pred_hid,
@@ -297,9 +281,7 @@ class Shapes2dTestConfig(BaseConfig):
 
     def new_game(self, seed=None, save_video=False, save_path=None, video_callable=None, uid=None, test=False, final_test=False):
         env = gym.make(self.env_name)
-
-        env = WarpFrame(env, width=self.obs_shape[1], height=self.obs_shape[2], grayscale=self.gray_scale)
-        env = TimeLimit(env, max_episode_steps=self.max_moves)
+        #env = TimeLimit(env, max_episode_steps=self.max_moves)
 
         if seed is not None:
             env.seed(seed)

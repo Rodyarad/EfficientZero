@@ -80,7 +80,7 @@ def test(config, model, counter, test_episodes, device, render, save_video=False
         # new games
         envs = [config.new_game(seed=i, save_video=save_video, save_path=save_path, test=True, final_test=final_test,
                               video_callable=lambda episode_id: True, uid=i) for i in range(test_episodes)]
-        max_episode_steps = envs[0].get_max_episode_steps()
+        max_episode_steps = config.max_moves
         if use_pb:
             pb = tqdm(np.arange(max_episode_steps), leave=True)
         # initializations

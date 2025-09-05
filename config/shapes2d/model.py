@@ -267,24 +267,6 @@ class DynamicsNetwork(nn.Module):
 
         return state, reward_hidden, reward
 
-    def get_dynamic_mean(self):
-        dynamic_mean = np.abs(self.conv.weight.detach().cpu().numpy().reshape(-1)).tolist()
-
-        for block in self.resblocks:
-            for name, param in block.named_parameters():
-                dynamic_mean += np.abs(param.detach().cpu().numpy().reshape(-1)).tolist()
-        dynamic_mean = sum(dynamic_mean) / len(dynamic_mean)
-        return dynamic_mean
-
-    def get_reward_mean(self):
-        reward_w_dist = self.conv1x1_reward.weight.detach().cpu().numpy().reshape(-1)
-
-        for name, param in self.fc.named_parameters():
-            temp_weights = param.detach().cpu().numpy().reshape(-1)
-            reward_w_dist = np.concatenate((reward_w_dist, temp_weights))
-        reward_mean = np.abs(reward_w_dist).mean()
-        return reward_w_dist, reward_mean
-
 
 # predict the value and policy given hidden states
 class PredictionNetwork(nn.Module):
@@ -298,7 +280,6 @@ class PredictionNetwork(nn.Module):
         init_zero=False,
         use_bn=True,
         p_norm=False,
-        policy_distr='squashed_gaussian',
         noisy=False,
         value_support=None,
         **kwargs
@@ -312,7 +293,6 @@ class PredictionNetwork(nn.Module):
         self.action_space_size = action_shape
         self.init_std = 1.0
         self.min_std = 0.1
-        self.policy_distr = policy_distr
 
         self.val_resblock = ResidualBlock(hidden_shape, hidden_shape)
         self.pi_resblock = ResidualBlock(hidden_shape, hidden_shape)
@@ -322,7 +302,7 @@ class PredictionNetwork(nn.Module):
 
 
         self.val_net = mlp(self.hidden_shape, self.val_net_shape, full_support_size, use_bn=use_bn)
-        self.pi_net = mlp(self.hidden_shape, self.pi_net_shape, self.action_shape * 2,
+        self.pi_net = mlp(self.hidden_shape, self.pi_net_shape, self.action_shape,
                           init_zero=init_zero,
                           use_bn=use_bn,
                           p_norm=p_norm,
@@ -342,21 +322,12 @@ class PredictionNetwork(nn.Module):
     def forward(self, x):
         value = self.val_resblock(x)
         value = self.val_ln(value)
-        values = []
-        values.append(self.val_net(value))
-        values = torch.stack(values)
+        value = self.val_net(value)
 
         policy = self.pi_resblock(x)
         policy = self.pi_ln(policy)
         policy = self.pi_net(policy)
-
-        action_space_size = policy.shape[-1] // 2
-        if self.policy_distr == 'squashed_gaussian':
-            policy[:, :action_space_size] = 5 * torch.tanh(policy[:, :action_space_size] / 5)  # soft clamp mu
-            policy[:, action_space_size:] = torch.nn.functional.softplus(
-                policy[:, action_space_size:] + self.init_std) + self.min_std  # same as Dreamer-v3
-
-        return policy, values
+        return policy, value
 
     def log_std(self, x, low, dif):
         return low + 0.5 * dif * (torch.tanh(x) + 1)
@@ -388,7 +359,6 @@ class EfficientZeroNet(BaseNet):
         pred_out=256,
         init_zero=False,
         state_norm=False,
-        policy_distribution = "squashed_gaussian"
     ):
         """EfficientZero network
         Parameters
@@ -478,7 +448,6 @@ class EfficientZeroNet(BaseNet):
             init_zero=self.init_zero,
             use_bn=use_bn,
             p_norm=use_p_norm,
-            policy_distr=policy_distribution,
             noisy=noisy_net
         )
 
@@ -534,13 +503,6 @@ class EfficientZeroNet(BaseNet):
         else:
             next_encoded_state_normalized = renormalize(next_encoded_state)
             return next_encoded_state_normalized, reward_hidden, value_prefix
-
-    def get_params_mean(self):
-        representation_mean = self.representation_network.get_param_mean()
-        dynamic_mean = self.dynamics_network.get_dynamic_mean()
-        reward_w_dist, reward_mean = self.dynamics_network.get_reward_mean()
-
-        return reward_w_dist, representation_mean, dynamic_mean, reward_mean
 
     def project(self, hidden_state, with_grad=True):
         # only the branch of proj + pred can share the gradients

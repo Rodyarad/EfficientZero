@@ -322,7 +322,6 @@ class BatchWorker_GPU(object):
                 else:
                     m_output = self.model.initial_inference(m_obs)
                 network_output.append(m_output)
-
             # concat the output slices after model inference
             if self.config.use_root_value:
                 # use the root values from MCTS
@@ -340,8 +339,6 @@ class BatchWorker_GPU(object):
             else:
                 # use the predicted values
                 value_lst = concat_output_value(network_output)
-            import ipdb
-            ipdb.set_trace()
             # get last state value
             value_lst = value_lst.reshape(-1) * (np.array([self.config.discount for _ in range(batch_size)]) ** td_steps_lst)
             value_lst = value_lst * np.array(value_mask)

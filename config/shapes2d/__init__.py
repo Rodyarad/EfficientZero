@@ -133,7 +133,7 @@ class Shapes2dConfig(BaseConfig):
 
     def new_game(self, seed=None, save_video=False, save_path=None, video_callable=None, uid=None, test=False, final_test=False):
         env = gym.make(self.env_name)
-        env = TimeLimit(env, max_episode_steps=self.max_moves)
+        #env = TimeLimit(env, max_episode_steps=self.max_moves)
 
         if seed is not None:
             env.seed(seed)

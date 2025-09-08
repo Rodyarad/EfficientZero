@@ -35,7 +35,7 @@ class Shapes2dConfig(BaseConfig):
             # network initialization/ & normalization
             episode_life=True,
             init_zero=True,
-            clip_reward=True,
+            clip_reward=False,
             # storage efficient
             cvt_string=True,
             image_based=True,
@@ -142,7 +142,7 @@ class Shapes2dConfig(BaseConfig):
         env = gym.make(self.env_name)
 
         env = WarpFrame(env, width=self.obs_shape[1], height=self.obs_shape[2], grayscale=self.gray_scale)
-        env = TimeLimit(env, max_episode_steps=self.max_moves)
+        #env = TimeLimit(env, max_episode_steps=self.max_moves)
 
         if seed is not None:
             env.seed(seed)
@@ -196,7 +196,7 @@ class Shapes2dTestConfig(BaseConfig):
             # network initialization/ & normalization
             episode_life=True,
             init_zero=True,
-            clip_reward=True,
+            clip_reward=False,
             # storage efficient
             cvt_string=True,
             image_based=True,
@@ -303,7 +303,7 @@ class Shapes2dTestConfig(BaseConfig):
         env = gym.make(self.env_name)
 
         env = WarpFrame(env, width=self.obs_shape[1], height=self.obs_shape[2], grayscale=self.gray_scale)
-        env = TimeLimit(env, max_episode_steps=self.max_moves)
+        #env = TimeLimit(env, max_episode_steps=self.max_moves)
 
         if seed is not None:
             env.seed(seed)

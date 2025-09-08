@@ -401,7 +401,7 @@ class Shapes2d(gym.Env):
         else:
             observation = None
 
-        return observation, reward, terminated and truncated, info
+        return observation, reward, terminated or truncated, info
 
     def _get_all_moving_boxes(self):
         moving_boxes = []

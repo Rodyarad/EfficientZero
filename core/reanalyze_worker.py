@@ -78,7 +78,7 @@ class BatchWorker_CPU(object):
                 td_steps_lst.append(td_steps)
                 bootstrap_index = current_index + td_steps
 
-                if bootstrap_index < traj_len:
+                if bootstrap_index < traj_len and not game.truncateds[bootstrap_index]:
                     value_mask.append(1)
                     beg_index = bootstrap_index - (state_index + td_steps)
                     end_index = beg_index + config.stacked_observations
@@ -144,7 +144,7 @@ class BatchWorker_CPU(object):
                 game_obs = game.obs(state_index, config.num_unroll_steps)
                 for current_index in range(state_index, state_index + config.num_unroll_steps + 1):
 
-                    if current_index < traj_len:
+                    if current_index < traj_len and not game.truncateds[current_index]:
                         policy_mask.append(1)
                         beg_index = current_index - state_index
                         end_index = beg_index + config.stacked_observations

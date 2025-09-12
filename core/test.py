@@ -28,7 +28,7 @@ def _test(config, shared_storage):
             test_model.set_weights(ray.get(shared_storage.get_weights.remote()))
             test_model.eval()
 
-            test_score, test_success_rate, eval_steps, _ = test(config, test_model, counter, config.test_episodes, config.device, False, save_video=True)
+            test_score, test_success_rate, eval_steps, _ = test(config, test_model, counter, config.test_episodes, config.device, False, save_video=False)
             mean_score = test_score.mean()
             std_score = test_score.std()
             success_rate = test_success_rate.mean()
@@ -139,7 +139,10 @@ def test(config, model, counter, test_episodes, device, render, save_video=False
                     clip_reward = ori_reward
 
                 game_histories[i].store_search_stats(distributions, value)
-                game_histories[i].append(action, obs, clip_reward)
+                if done:
+                    game_histories[i].append(action, obs, clip_reward, info['TimeLimit.truncated'])
+                else:
+                    game_histories[i].append(action, obs, clip_reward, False)
 
                 dones[i] = done
                 ep_ori_rewards[i] += ori_reward

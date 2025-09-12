@@ -58,6 +58,7 @@ class GameHistory:
         self.actions = []
         self.obs_history = []
         self.rewards = []
+        self.truncateds = []
 
     def init(self, init_observations):
         """Initialize a history block, stack the previous stacked_observations frames.
@@ -72,6 +73,7 @@ class GameHistory:
         self.actions = []
         self.obs_history = []
         self.rewards = []
+        self.truncateds = []
         self.target_values = []
         self.target_rewards = []
         self.target_policies = []
@@ -81,7 +83,8 @@ class GameHistory:
         for observation in init_observations:
             self.obs_history.append(copy.deepcopy(observation))
 
-    def pad_over(self, next_block_observations, next_block_rewards, next_block_root_values, next_block_child_visits):
+    def pad_over(self, next_block_observations, next_block_rewards, next_block_root_values, next_block_child_visits,
+                 next_block_truncateds):
         """To make sure the correction of value targets, we need to add (o_t, r_t, etc) from the next history block
         , which is necessary for the bootstrapped values at the end states of this history block.
         Eg: len = 100; target value v_100 = r_100 + gamma^1 r_101 + ... + gamma^4 r_104 + gamma^5 v_105,
@@ -101,6 +104,7 @@ class GameHistory:
         assert len(next_block_child_visits) <= self.config.num_unroll_steps
         assert len(next_block_root_values) <= self.config.num_unroll_steps + self.config.td_steps
         assert len(next_block_rewards) <= self.config.num_unroll_steps + self.config.td_steps - 1
+        assert len(next_block_truncateds) == len(next_block_rewards)
 
         # notice: next block observation should start from (stacked_observation - 1) in next trajectory
         for observation in next_block_observations:
@@ -115,6 +119,9 @@ class GameHistory:
         for child_visits in next_block_child_visits:
             self.child_visits.append(child_visits)
 
+        for truncated in next_block_truncateds:
+            self.truncateds.append(truncated)
+
     def is_full(self):
         # history block is full
         return self.__len__() >= self.max_length
@@ -122,11 +129,12 @@ class GameHistory:
     def legal_actions(self):
         return [_ for _ in range(self.action_space.n)]
 
-    def append(self, action, obs, reward):
+    def append(self, action, obs, reward, truncated):
         # append a transition tuple
         self.actions.append(action)
         self.obs_history.append(obs)
         self.rewards.append(reward)
+        self.truncateds.append(truncated)
 
     def obs(self, i, extra_len=0, padding=False):
         """To obtain an observation of correct format: o[t, t + stack frames + extra len]
@@ -175,6 +183,7 @@ class GameHistory:
         self.actions = np.array(self.actions)
         self.child_visits = np.array(self.child_visits)
         self.root_values = np.array(self.root_values)
+        self.truncateds = np.array(self.truncateds)
 
     def store_search_stats(self, visit_counts, root_value, idx: int = None):
         # store the visit count distributions and value of the root node after MCTS

@@ -72,6 +72,7 @@ class DataWorker(object):
         end_index = beg_index + self.gap_step - 1
 
         pad_reward_lst = game_histories[i].rewards[beg_index:end_index]
+        pad_truncated_lst = game_histories[i].truncateds[beg_index:end_index]
 
         beg_index = 0
         end_index = beg_index + self.gap_step
@@ -79,7 +80,7 @@ class DataWorker(object):
         pad_root_values_lst = game_histories[i].root_values[beg_index:end_index]
 
         # pad over and save
-        last_game_histories[i].pad_over(pad_obs_lst, pad_reward_lst, pad_root_values_lst, pad_child_visits_lst)
+        last_game_histories[i].pad_over(pad_obs_lst, pad_reward_lst, pad_root_values_lst, pad_child_visits_lst, pad_truncated_lst)
         last_game_histories[i].game_over()
 
         self.put((last_game_histories[i], last_game_priorities[i]))
@@ -305,7 +306,10 @@ class DataWorker(object):
 
                         # store data
                         game_histories[i].store_search_stats(distributions, value)
-                        game_histories[i].append(action, obs, clip_reward)
+                        if done:
+                            game_histories[i].append(action, obs, clip_reward, info['TimeLimit.truncated'])
+                        else:
+                            game_histories[i].append(action, obs, clip_reward, False)
 
                         eps_reward_lst[i] += clip_reward
                         eps_ori_reward_lst[i] += ori_reward

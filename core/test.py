@@ -140,7 +140,8 @@ def test(config, model, counter, test_episodes, device, render, save_video=False
 
                 game_histories[i].store_search_stats(distributions, value)
                 if done:
-                    game_histories[i].append(action, obs, clip_reward, info['TimeLimit.truncated'])
+                    truncated = info.get('TimeLimit.truncated', False)
+                    game_histories[i].append(action, obs, clip_reward, truncated)
                 else:
                     game_histories[i].append(action, obs, clip_reward, False)
 

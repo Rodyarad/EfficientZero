@@ -175,6 +175,8 @@ class DataWorker(object):
                         return
                     if start_training and (total_transitions / max_transitions) > (trained_steps / self.config.training_steps):
                         # self-play is faster than training speed or finished
+                        print(f"[DW{self.rank}] THROTTLE: transitions={total_transitions}/{max_transitions}, "
+                              f"trained={trained_steps}/{self.config.training_steps}")
                         time.sleep(1)
                         continue
 
@@ -307,7 +309,8 @@ class DataWorker(object):
                         # store data
                         game_histories[i].store_search_stats(distributions, value)
                         if done:
-                            game_histories[i].append(action, obs, clip_reward, info['TimeLimit.truncated'])
+                            truncated = info.get('TimeLimit.truncated', False)
+                            game_histories[i].append(action, obs, clip_reward, truncated)
                         else:
                             game_histories[i].append(action, obs, clip_reward, False)
 

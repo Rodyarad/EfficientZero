@@ -211,7 +211,7 @@ class Shapes2d(gym.Env):
     def _get_coordinates_info(self):
         # object coordinates normalized to (-1, 1)
         coordinates = (self.box_pos + 0.5) / self.w * 2 - 1
-        coordinates[self.box_pos[:, 0] < 0] = 1e+8
+        coordinates[self.box_pos[:, 0] < 0] = -1
         coordinates = coordinates.flatten()
         return coordinates
 

@@ -70,13 +70,13 @@ class Shapes2dConfig(BaseConfig):
 
         self.start_transitions = self.start_transitions * 1000
         self.start_transitions = max(1, self.start_transitions)
-        self.blocks = 2
-        self.hidden_shape = 128
-        self.rep_net_shape = 256
-        self.dyn_shape = 256
-        self.rew_net_shape = [256, 256]
-        self.val_net_shape = [256, 256]
-        self.pi_net_shape = [256, 256]
+        self.blocks = 1
+        self.hidden_shape = 64
+        self.rep_net_shape = 64
+        self.dyn_shape = 64
+        self.rew_net_shape = [32]
+        self.val_net_shape = [32]
+        self.pi_net_shape = [32]
         self.use_bn = True
         self.use_p_norm = False
         self.noisy_net = False
@@ -216,13 +216,13 @@ class Shapes2dTestConfig(BaseConfig):
 
         self.start_transitions = self.start_transitions * 1000
         self.start_transitions = max(1, self.start_transitions)
-        self.blocks = 2
-        self.hidden_shape = 128
-        self.rep_net_shape = 256
-        self.dyn_shape = 256
-        self.rew_net_shape = [256, 256]
-        self.val_net_shape = [256, 256]
-        self.pi_net_shape = [256, 256]
+        self.blocks = 1
+        self.hidden_shape = 64
+        self.rep_net_shape = 64
+        self.dyn_shape = 64
+        self.rew_net_shape = [32]
+        self.val_net_shape = [32]
+        self.pi_net_shape = [32]
         self.use_bn = True
         self.use_p_norm = False
         self.noisy_net = False

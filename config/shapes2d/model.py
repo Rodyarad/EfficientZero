@@ -243,29 +243,30 @@ class DynamicsNetwork(nn.Module):
                            use_bn=use_bn)
 
 
-    def forward(self, hidden, reward_hidden=None):
+    def forward(self, x, reward_hidden=None):
         # imporved res block 1st
-        state_no_act = hidden[:, :-1]
-        x = self.dyn_ln_1(hidden)
+        state_no_act = x[:, :-1]
+        x = self.dyn_ln_1(x)
         x = self.dyn_net_1(x)
         x = nn.functional.relu(x)
         x = self.dyn_net_2(x)
 
-        state = state_no_act + x
+        x = state_no_act + x
 
         # residual tower for dynamic model (2nd -> num blocks)
         for block in self.dyn_resblocks:
-            state = block(state)
+            x = block(x)
+        next_state = x
 
-        next_state = self.rew_resblock(state)
-        next_state = self.ln(next_state)
-        next_state = next_state.unsqueeze(0)
-        reward, reward_hidden = self.lstm(next_state, reward_hidden)
+        x = self.rew_resblock(x)
+        x = self.ln(x)
+        x = x.unsqueeze(0)
+        reward, reward_hidden = self.lstm(x, reward_hidden)
         reward = reward.squeeze(0)
         reward = self.rew_net(reward)
 
 
-        return state, reward_hidden, reward
+        return next_state, reward_hidden, reward
 
 
 # predict the value and policy given hidden states

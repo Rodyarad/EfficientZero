@@ -28,7 +28,7 @@ def _test(config, shared_storage):
             test_model.set_weights(ray.get(shared_storage.get_weights.remote()))
             test_model.eval()
 
-            test_score, test_success_rate, eval_steps, _ = test(config, test_model, counter, config.test_episodes, config.device, False, save_video=True)
+            test_score, test_success_rate, eval_steps, _ = test(config, test_model, counter, config.test_episodes, config.device, False, save_video=False)
             mean_score = test_score.mean()
             std_score = test_score.std()
             success_rate = test_success_rate.mean()

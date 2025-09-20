@@ -89,9 +89,9 @@ class DataWorker(object):
         last_game_histories[i] = None
         last_game_priorities[i] = None
 
-    def get_priorities(self, i, pred_values_lst, search_values_lst):
+    def get_priorities(self, i, pred_values_lst, search_values_lst, start_training):
         # obtain the priorities at index i
-        if self.config.use_priority and not self.config.use_max_priority:
+        if self.config.use_priority and not self.config.use_max_priority and start_training:
             pred_values = torch.from_numpy(np.array(pred_values_lst[i])).to(self.device).float()
             search_values = torch.from_numpy(np.array(search_values_lst[i])).to(self.device).float()
             priorities = L1Loss(reduction='none')(pred_values, search_values).detach().cpu().numpy() + self.config.prioritized_replay_eps
@@ -226,7 +226,7 @@ class DataWorker(object):
                                 self.put_last_trajectory(i, last_game_histories, last_game_priorities, game_histories)
 
                             # store current block trajectory
-                            priorities = self.get_priorities(i, pred_values_lst, search_values_lst)
+                            priorities = self.get_priorities(i, pred_values_lst, search_values_lst, start_training)
                             game_histories[i].game_over()
 
                             self.put((game_histories[i], priorities))
@@ -326,7 +326,7 @@ class DataWorker(object):
                                 self.put_last_trajectory(i, last_game_histories, last_game_priorities, game_histories)
 
                             # calculate priority
-                            priorities = self.get_priorities(i, pred_values_lst, search_values_lst)
+                            priorities = self.get_priorities(i, pred_values_lst, search_values_lst, start_training)
 
                             # save block trajectory
                             last_game_histories[i] = game_histories[i]
@@ -347,7 +347,7 @@ class DataWorker(object):
                             self.put_last_trajectory(i, last_game_histories, last_game_priorities, game_histories)
 
                         # store current block trajectory
-                        priorities = self.get_priorities(i, pred_values_lst, search_values_lst)
+                        priorities = self.get_priorities(i, pred_values_lst, search_values_lst, start_training)
                         game_histories[i].game_over()
 
                         self.put((game_histories[i], priorities))

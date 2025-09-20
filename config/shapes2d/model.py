@@ -17,42 +17,42 @@ class PNorm(nn.Module):
         assert len(x.shape) == 2
         return nn.functional.normalize(x, dim=1, eps=self.eps)
 
-class RunningMeanStd(nn.Module):
-    def __init__(self, shape, epsilon=1e-5, momentum=0.1):
-        super(RunningMeanStd, self).__init__()
-        self.epsilon = epsilon
-        self.momentum = momentum
-        self.count = 1e3
-        self.register_buffer('running_mean', torch.zeros(shape))
-        self.register_buffer('running_var', torch.ones(shape))
-
-    def forward(self, x):
-        if self.training:
-            mean = x.mean(dim=0)
-            var = x.var(dim=0, unbiased=False)
-            batch_count = x.shape[0]
-            self.running_mean, self.running_var, self.count = self.update_mean_var_count_from_moments(self.running_mean, self.running_var, self.count, mean, var, batch_count)
-            global_mean = self.running_mean
-            global_var = self.running_var
-        else:
-            global_mean = self.running_mean
-            global_var = self.running_var
-        x = (x - global_mean) / torch.sqrt(global_var + self.epsilon)
-        return x
-
-    def update_mean_var_count_from_moments(self, mean, var, count, batch_mean, batch_var, batch_count):
-        """Updates the mean, var and count using the previous mean, var, count and batch values."""
-        delta = batch_mean - mean
-        tot_count = count + batch_count
-
-        new_mean = mean + delta * batch_count / tot_count
-        m_a = var * count
-        m_b = batch_var * batch_count
-        M2 = m_a + m_b + torch.square(delta) * count * batch_count / tot_count
-        new_var = M2 / tot_count
-        new_count = tot_count
-
-        return new_mean, new_var, new_count
+# class RunningMeanStd(nn.Module):
+#     def __init__(self, shape, epsilon=1e-5, momentum=0.1):
+#         super(RunningMeanStd, self).__init__()
+#         self.epsilon = epsilon
+#         self.momentum = momentum
+#         self.count = 1e3
+#         self.register_buffer('running_mean', torch.zeros(shape))
+#         self.register_buffer('running_var', torch.ones(shape))
+#
+#     def forward(self, x):
+#         if self.training:
+#             mean = x.mean(dim=0)
+#             var = x.var(dim=0, unbiased=False)
+#             batch_count = x.shape[0]
+#             self.running_mean, self.running_var, self.count = self.update_mean_var_count_from_moments(self.running_mean, self.running_var, self.count, mean, var, batch_count)
+#             global_mean = self.running_mean
+#             global_var = self.running_var
+#         else:
+#             global_mean = self.running_mean
+#             global_var = self.running_var
+#         x = (x - global_mean) / torch.sqrt(global_var + self.epsilon)
+#         return x
+#
+#     def update_mean_var_count_from_moments(self, mean, var, count, batch_mean, batch_var, batch_count):
+#         """Updates the mean, var and count using the previous mean, var, count and batch values."""
+#         delta = batch_mean - mean
+#         tot_count = count + batch_count
+#
+#         new_mean = mean + delta * batch_count / tot_count
+#         m_a = var * count
+#         m_b = batch_var * batch_count
+#         M2 = m_a + m_b + torch.square(delta) * count * batch_count / tot_count
+#         new_var = M2 / tot_count
+#         new_count = tot_count
+#
+#         return new_mean, new_var, new_count
 
 def mlp(
     input_size,
@@ -154,7 +154,7 @@ class RepresentationNetwork(nn.Module):
         """
         super().__init__()
 
-        self.running_mean_std = RunningMeanStd(observation_shape)
+        #self.running_mean_std = RunningMeanStd(observation_shape)
         self.mlp = nn.Linear(observation_shape, hidden_shape)
         self.ln = nn.LayerNorm(hidden_shape)
         self.Rep_resblocks = nn.ModuleList(
@@ -163,7 +163,7 @@ class RepresentationNetwork(nn.Module):
 
     def forward(self, x):
 
-        x = self.running_mean_std(x)
+        #x = self.running_mean_std(x)
         x = self.mlp(x)
         x = self.ln(x)
         x = torch.tanh(x)

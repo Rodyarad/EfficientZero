@@ -354,11 +354,8 @@ class DynamicsNetworkNoPrefix(nn.Module):
         x = self.bn_reward(x)
         x = nn.functional.relu(x)
 
-        x = x.view(-1, self.block_output_size_reward).unsqueeze(0)
-        value_prefix = x.squeeze(0)
-        value_prefix = self.bn_value_prefix(value_prefix)
-        value_prefix = nn.functional.relu(value_prefix)
-        value_prefix = self.fc(value_prefix)
+        x = x.reshape(-1, self.block_output_size_reward)
+        value_prefix = self.fc(x)
 
         return state, value_prefix
 

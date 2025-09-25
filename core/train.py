@@ -346,8 +346,11 @@ def _train(model, target_model, replay_buffer, shared_storage, batch_storage, co
     model = model.to(config.device)
     target_model = target_model.to(config.device)
 
-    optimizer = optim.SGD(model.parameters(), lr=config.lr_init, momentum=config.momentum,
-                          weight_decay=config.weight_decay)
+    optimizer = optim.SGD(model.parameters(), lr=config.lr_init, momentum=config.momentum, weight_decay=config.weight_decay)
+    
+    #optimizer = optim.Adam(model.parameters(), lr=config.lr_init, weight_decay=config.weight_decay)
+    
+    #optimizer = optim.RMSprop(model.parameters(), lr=config.lr_init, momentum=config.momentum, weight_decay=config.weight_decay)
 
     scaler = GradScaler()
 

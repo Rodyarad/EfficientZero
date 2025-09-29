@@ -269,7 +269,7 @@ class DataWorker(object):
                         stack_obs = torch.from_numpy(np.array(stack_obs)).to(self.device)
 
                     if self.config.amp_type == 'torch_amp':
-                        with autocast():
+                        with autocast(dtype=torch.bfloat16):
                             network_output = model.initial_inference(stack_obs.float())
                     else:
                         network_output = model.initial_inference(stack_obs.float())

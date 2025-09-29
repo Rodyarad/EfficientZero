@@ -70,7 +70,7 @@ class MCTS(object):
 
                 # evaluation for leaf nodes
                 if self.config.amp_type == 'torch_amp':
-                    with autocast():
+                    with autocast(dtype=torch.bfloat16):
                         network_output = model.recurrent_inference(hidden_states, (hidden_states_c_reward, hidden_states_h_reward), last_actions)
                 else:
                     network_output = model.recurrent_inference(hidden_states, (hidden_states_c_reward, hidden_states_h_reward), last_actions)

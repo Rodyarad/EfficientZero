@@ -112,7 +112,7 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
     target_value_phi = config.value_phi(transformed_target_value)
 
     if config.amp_type == 'torch_amp':
-        with autocast():
+        with autocast(dtype=torch.bfloat16):
             value, _, policy_logits, hidden_state, reward_hidden = model.initial_inference(obs_batch)
     else:
         value, _, policy_logits, hidden_state, reward_hidden = model.initial_inference(obs_batch)
@@ -141,7 +141,7 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
     # loss of the unrolled steps
     if config.amp_type == 'torch_amp':
         # use torch amp
-        with autocast():
+        with autocast(dtype=torch.bfloat16):
             for step_i in range(config.num_unroll_steps):
                 # unroll with the dynamics function
                 value, value_prefix, policy_logits, hidden_state, reward_hidden = model.recurrent_inference(hidden_state, reward_hidden, action_batch[:, step_i])
@@ -260,7 +260,7 @@ def update_weights(model, batch, optimizer, replay_buffer, config, scaler, vis_r
     # backward
     parameters = model.parameters()
     if config.amp_type == 'torch_amp':
-        with autocast():
+        with autocast(dtype=torch.bfloat16):
             total_loss = weighted_loss
             total_loss.register_hook(lambda grad: grad * gradient_scale)
     else:

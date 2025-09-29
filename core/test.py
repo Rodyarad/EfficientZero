@@ -110,7 +110,7 @@ def test(config, model, counter, test_episodes, device, render, save_video=False
                 stack_obs = [game_history.step_obs() for game_history in game_histories]
                 stack_obs = torch.from_numpy(np.array(stack_obs)).to(device)
 
-            with autocast():
+            with autocast(dtype=torch.bfloat16):
                 network_output = model.initial_inference(stack_obs.float())
             hidden_state_roots = network_output.hidden_state
             reward_hidden_roots = network_output.reward_hidden
